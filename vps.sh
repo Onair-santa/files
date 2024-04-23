@@ -2,8 +2,6 @@
 
 
 clear
-apt install -y sudo wget
-sleep 1
 
 # Green, Yellow & Red Messages.
 green_msg() {
