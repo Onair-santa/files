@@ -605,7 +605,7 @@ nft_optimizations() {
     # Enable & Reload
     sudo systemctl restart nftables
     echo 
-    green_msg 'NFT is Installed & Optimized. (Ports 2222, 80, 443 is opened)'
+    green_msg 'NFT is Installed (Ports TCP 2222, 80, 443 UDP 1024-65535 is opened)'
     echo 
     sleep 0.5
 }
