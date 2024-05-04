@@ -755,9 +755,9 @@ show_menu() {
     echo 
     yellow_msg '              Choose One Option: '
     echo 
-    green_msg '1.  - Complete Update + Packages + SWAP + Optimize Net, SSH & Sys Limits + NFT + Fail2ban'
-    green_msg '2.  - Complete Update + SWAP + Optimize Net, SSH & Sys Limits + NFT'
-    green_msg '3.  - Complete Update + SWAP + Optimize Net, SSH & Sys Limits'
+    green_msg '1.  - Complete Update + Packages + Optimize Net, SSH & Sys Limits + NFT + Fail2ban'
+    green_msg '2.  - Complete Update + Optimize Net, SSH & Sys Limits + NFT'
+    green_msg '3.  - Complete Update + Optimize Net, SSH & Sys Limits'
     echo 
     cyn_msg '4.  - Complete Update & Clean the OS'
     cyn_msg '5.  - Install Packages(htop, curl, nftables, speedtest)'
@@ -788,9 +788,6 @@ main() {
 
             installations
             enable_packages
-            sleep 0.5
-
-            swap_maker
             sleep 0.5
 
             sysctl_optimizations
@@ -824,9 +821,6 @@ main() {
             complete_update
             sleep 0.5
 
-            swap_maker
-            sleep 0.5
-
             sysctl_optimizations
             sleep 0.5
 
@@ -853,9 +847,6 @@ main() {
             ;;
         3)
             complete_update
-            sleep 0.5
-
-            swap_maker
             sleep 0.5
 
             sysctl_optimizations
