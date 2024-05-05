@@ -737,6 +737,51 @@ EOF
     sleep 1
 }
 
+# Enable Systemd DNS resolver
+systemd_resolved() {
+sudo systemctl enable systemd-resolved
+sudo systemctl start systemd-resolved
+chattr -i /etc/resolv.conf
+sudo rm /etc/resolv.conf
+sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+cat >/etc/systemd/resolved.conf <<-\EOF
+[Resolve]
+# Some examples of DNS servers which may be used for DNS= and FallbackDNS=:
+# Cloudflare: 1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
+# Google:     8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844
+DNS=8.8.8.8 1.1.1.1
+FallbackDNS=8.8.4.4 1.0.0.1
+#Domains=
+#DNSSEC=no
+#DNSOverTLS=no
+#MulticastDNS=yes
+#LLMNR=yes
+Cache=no-negative
+#DNSStubListener=yes
+#DNSStubListenerExtra=
+#ReadEtcHosts=yes
+#ResolveUnicastSingleLabel=no
+EOF
+sudo systemctl restart systemd-resolved
+systemd-resolve --status | grep 'DNS Servers' -A2
+sleep 0.5
+}
+
+# Repo Debian 11
+repo_debian() {
+tee /etc/apt/sources.list<<EOF
+deb http://deb.debian.org/debian bullseye main
+deb-src http://deb.debian.org/debian bullseye main
+deb http://security.debian.org/debian-security bullseye-security main
+deb-src http://security.debian.org/debian-security bullseye-security main
+deb http://deb.debian.org/debian bullseye-updates main
+deb-src http://deb.debian.org/debian bullseye-updates main
+deb http://deb.debian.org/debian bullseye-backports main
+deb-src http://deb.debian.org/debian bullseye-backports main
+EOF
+echo 
+sleep 0.5
+}
 
 # Show the Menu
 show_menu() {
@@ -755,21 +800,23 @@ show_menu() {
     echo 
     yellow_msg '              Choose One Option: '
     echo 
-    green_msg '1.  - Complete Update + Packages + Optimize Net, SSH & Sys Limits + NFT + Fail2ban'
-    green_msg '2.  - Complete Update + Optimize Net, SSH & Sys Limits + NFT'
-    green_msg '3.  - Complete Update + Optimize Net, SSH & Sys Limits'
+    green_msg '1.  - Update + SystemDNSResolver + Packages + Net, SSH, Sys Limits + PubKey + NFT + Fail2ban'
+    green_msg '2.  - Update + Net, SSH, Sys Limits + NFT'
+    green_msg '3.  - Update + Net, SSH, Sys Limits'
     echo 
-    cyn_msg '4.  - Complete Update & Clean the OS'
-    cyn_msg '5.  - Install Packages(htop, curl, nftables, speedtest)'
-    cyn_msg '6.  - Make SWAP (1Gb)'
-    cyn_msg '7.  - Optimize the Network, SSH & System Limits'
+    cyn_msg '4.  - Update & Clean the OS'
+    cyn_msg '5.  - Packages(htop, curl, nftables, speedtest)'
+    cyn_msg '6.  - SWAP (1Gb)'
+    cyn_msg '7.  - Network, SSH, System Limits'
     echo 
-    yellow_msg '8.  - Optimize the Network settings'
-    yellow_msg '9.  - Optimize the SSH settings(port 2222, disable PassAuth, enable PubKey)'
-    yellow_msg '10. - Optimize the System Limits'
-    yellow_msg '11. - Install & Optimize NFT(open ports 2222 443 80)'
-    yellow_msg '12. - Install Crowdsec'
-    yellow_msg '13. - Install Fail2ban'
+    yellow_msg '8.  - Network settings'
+    yellow_msg '9.  - SSH settings(port 2222, disable PassAuth, enable PubKey)'
+    yellow_msg '10. - System Limits'
+    yellow_msg '11. - NFT(open ports 2222 443 80, udp 1024-65535)'
+    yellow_msg '12. - Crowdsec'
+    yellow_msg '13. - Fail2ban'
+    yellow_msg '14. - Systemd DNS Resolver'
+    yellow_msg '15. - Repository Debian11'
     echo 
     red_msg 'Q - Exit'
     echo 
@@ -783,6 +830,8 @@ main() {
         read -p 'Enter Your Choice: ' choice
         case $choice in
         1)
+	    repo_debian
+            systemd_resolved
             complete_update
             sleep 0.5
 
@@ -984,6 +1033,23 @@ main() {
             f2b_install
             sleep 0.5
             
+            echo 
+            green_msg '========================='
+            green_msg  'Done.'
+            green_msg '========================='
+            ;;
+	14)
+            systemd_resolved
+            sleep 0.5
+            
+            echo 
+            green_msg '========================='
+            green_msg  'Done.'
+            green_msg '========================='
+            ;;
+	15)
+            repo_debian
+            sleep 0.5
             echo 
             green_msg '========================='
             green_msg  'Done.'
