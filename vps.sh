@@ -386,7 +386,7 @@ sysctl_optimizations() {
     sleep 0.5
 
     # Replace the new sysctl.conf file.
-    wget "https://raw.githubusercontent.com/Onair-santa/Debian-Optimizer/main/files/sysctl.conf" -q -O $SYS_PATH
+    wget "https://raw.githubusercontent.com/Onair-santa/files/main/files/sysctl.conf" -q -O $SYS_PATH
     sed -i '/net.ipv6.conf.eth0.disable_ipv6/d' $SYS_PATH
     echo "net.ipv6.conf."$INTERFACE".disable_ipv6 = 1" | tee -a $SYS_PATH
 
