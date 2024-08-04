@@ -775,10 +775,8 @@ chmod +x synth-shell/setup.sh
 cd synth-shell
 ./setup.sh
 sleep 1 
-wget https://github.com/Onair-santa/files/blob/main/synth-shell-greeter.config
-sudo rm ~/.config/synth-shell/synth-shell-greeter.config
-sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
-cat ~/synth-shell-greeter.config >> ~/.config/synth-shell/synth-shell-greeter.config
+wget https://github.com/Onair-santa/files/blob/main/synth-shell-greeter.config -q -O /root/.config/synth-shell-greeter.config
+sudo rm /root/.config/synth-shell/synth-shell-greeter.config.default
 sleep 1
 }
 
