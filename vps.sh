@@ -774,6 +774,12 @@ git clone --recursive https://github.com/andresgongora/synth-shell.git
 chmod +x synth-shell/setup.sh
 cd synth-shell
 ./setup.sh
+sleep 1 
+wget https://github.com/Onair-santa/files/blob/main/synth-shell-greeter.config
+sudo rm ~/.config/synth-shell/synth-shell-greeter.config
+sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
+cat ~/synth-shell-greeter.config >> ~/.config/synth-shell/synth-shell-greeter.config
+sleep 1
 
 # Repo Debian 11
 repo_debian() {
