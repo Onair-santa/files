@@ -1041,6 +1041,7 @@ main() {
         12)
             synth_shell
             sleep 1
+	    
             echo 
             green_msg '========================='
             green_msg  'Done.'
