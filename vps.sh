@@ -778,7 +778,7 @@ sleep 1
 sudo rm /root/.config/synth-shell/synth-shell-greeter.config.default
 sudo rm /root/.config/synth-shell/synth-shell-greeter.config
 wget https://github.com/Onair-santa/files/main/synth-shell-greeter.config -q -O /root/.config/synth-shell/synth-shell-greeter.config
-source .bashrc
+source /root/.bashrc
 sleep 1
 }
 
