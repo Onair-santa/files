@@ -767,6 +767,14 @@ systemd-resolve --status | grep 'DNS Servers' -A2
 sleep 0.5
 }
 
+# Synth Shell
+synth_shell() {
+sudo apt install bc fonts-powerline git -y
+git clone --recursive https://github.com/andresgongora/synth-shell.git
+chmod +x synth-shell/setup.sh
+cd synth-shell
+./setup.sh
+
 # Repo Debian 11
 repo_debian() {
 tee /etc/apt/sources.list<<EOF
@@ -800,7 +808,7 @@ show_menu() {
     echo 
     yellow_msg '              Choose One Option: '
     echo 
-    green_msg '1.  - Update + SystemDNSResolver + Packages + Net, SSH, Sys Limits + PubKey + NFT + Fail2ban'
+    green_msg '1.  - Update + SystemDNSResolver + Packages + Net, SSH, Sys Limits + PubKey + NFT + Fail2ban + Synth-Shell'
     green_msg '2.  - Update + Net, SSH, Sys Limits + NFT'
     green_msg '3.  - Update + Net, SSH, Sys Limits'
     echo 
@@ -813,7 +821,7 @@ show_menu() {
     yellow_msg '9.  - SSH settings(port 2222, disable PassAuth, enable PubKey)'
     yellow_msg '10. - System Limits'
     yellow_msg '11. - NFT(open ports 2222 443 80, udp 1024-65535)'
-    yellow_msg '12. - Crowdsec'
+    yellow_msg '12. - Synth-Shell'
     yellow_msg '13. - Fail2ban'
     yellow_msg '14. - Systemd DNS Resolver'
     yellow_msg '15. - Repository Debian11'
@@ -859,6 +867,9 @@ main() {
 
             f2b_install
             sleep 0.5
+
+            synth_shell
+	    sleep 1
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -1021,9 +1032,8 @@ main() {
             green_msg '========================='
             ;;
         12)
-            crowdsec_install
-            sleep 0.5
-
+            synth_shell
+            sleep 1
             echo 
             green_msg '========================='
             green_msg  'Done.'
