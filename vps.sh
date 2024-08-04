@@ -780,6 +780,7 @@ sudo rm ~/.config/synth-shell/synth-shell-greeter.config
 sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
 cat ~/synth-shell-greeter.config >> ~/.config/synth-shell/synth-shell-greeter.config
 sleep 1
+}
 
 # Repo Debian 11
 repo_debian() {
