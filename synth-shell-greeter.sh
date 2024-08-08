@@ -2483,17 +2483,11 @@ reportHogsMemory()
 ## - If you want extra spaces between the logo and the status info, just add
 ##   extra spaces at the last line and end it with '\n'.
 ##==============================================================================
-logo="\e[38;5;213m                          __  __
-        _______  ______  / /_/ /_
-       / ___/ / / / __ \/ __/ __ \\
-      /__  / /_/ / / / / /_/ / / /
-     /____/\__  /_/ /_/\__/_/ /_/
-          /____/
-\e[38;5;45m   _____ __  __________    __
-  / ___// / / / ____/ /   / /
-  \__ \/ /_/ / __/ / /   / /
- ___/ / __  / /___/ /___/ /___
-/____/_/ /_/_____/_____/_____/\e[0;39m"
+logo="
+\e[0;32m┌┬┐┌─┐┌┐ ┬┌─┐┌┐┌                
+\e[1;31m ││├┤ ├┴┐│├─┤│││                
+\e[1;31m─┴┘└─┘└─┘┴┴ ┴┘└┘                
+""
 ##==============================================================================
 ## STATUS INFO
 ##
@@ -2538,23 +2532,18 @@ logo="\e[38;5;213m                          __  __
 ##
 ##==============================================================================
 print_info="
-	OS
-	KERNEL
-	CPU
-	GPU
-	SHELL_NAME
-	DATE
-	UPTIME
-	LOCALIPV4
-	EXTERNALIPV4
-	SERVICES
-	CPUTEMP
-	SYSLOAD_MON%
-	MEMORY_MON
-	SWAP_MON
-	HDDROOT_MON
-	HDDHOME_MON
-	PALETTE"
+        OS
+        KERNEL
+        DATE
+        LOCATION
+        UPTIME
+        LOCALIPV4
+        EXTERNALIPV4
+        SERVICES
+        SYSLOAD_MON%
+        MEMORY_MON
+        SWAP_MON
+        HDDROOT_MON"
 ##==============================================================================
 ## COLORS
 ##
@@ -2592,14 +2581,17 @@ bar_ram_crit_percent=75
 bar_swap_crit_percent=25
 bar_hdd_crit_percent=85
 bar_home_crit_percent=85
+
 bar_ram_units="MB"
 bar_swap_units="MB"
 bar_hdd_units="GB"
 bar_home_units="GB"
+
 cpu_crit_print=true
 cpu_crit_print_num=3
 ram_crit_print=true
 ram_crit_print_num=3
+
 bar_length=9                    # Number of characters that comprise a bar
 bar_num_digits=5                # Control num digits for the bar's numeric value
 bar_padding_after=0             # Extra spaces between bar and numeric value
@@ -2613,10 +2605,10 @@ bar_background_char='━'
 ##
 ## For date format setup, see `man date`
 ##==============================================================================
-print_cols_max=100              # Keep logo and info text together
+print_cols_max=80              # Keep logo and info text together
 print_logo_right=false          # Change where the logo is plotted
 date_format="%Y.%m.%d - %T"     # see 'man date'
-clear_before_print=false        # Dangerous if true, some messages might be lost
+clear_before_print=true        # Dangerous if true, some messages might be lost
 print_extra_new_line_top=true   # Extra line before logo and info
 print_extra_new_line_bot=true   # Extra line after logo and info
 #!/usr/bin/env bash
