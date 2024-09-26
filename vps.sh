@@ -332,7 +332,7 @@ installations() {
     sudo apt -q -y install jq
 
     # Miscellaneous
-    sudo apt -q -y install dialog htop
+    sudo apt -q -y install dialog htop btop
 
     echo 
     green_msg 'Useful Packages Installed Succesfully.'
@@ -612,9 +612,9 @@ nft_optimizations() {
 
 # Install pubkey
 install_key() {
-    wget https://raw.githubusercontent.com/Onair-santa/files/main/id_rsa.pub &&
-    mkdir /root/.ssh &&
-    touch /root/.ssh/authorized_keys &&
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/id_rsa.pub
+    mkdir /root/.ssh
+    touch /root/.ssh/authorized_keys
     cat ~/id_rsa.pub >> ~/.ssh/authorized_keys
 }
 
