@@ -712,14 +712,14 @@ sleep 1
 # Repo Debian 11
 repo_debian() {
 tee /etc/apt/sources.list<<EOF
-deb http://deb.debian.org/debian bullseye main
-deb-src http://deb.debian.org/debian bullseye main
-deb http://security.debian.org/debian-security bullseye-security main
-deb-src http://security.debian.org/debian-security bullseye-security main
-deb http://deb.debian.org/debian bullseye-updates main
-deb-src http://deb.debian.org/debian bullseye-updates main
-deb http://deb.debian.org/debian bullseye-backports main
-deb-src http://deb.debian.org/debian bullseye-backports main
+deb http://mirror.yandex.ru/debian bullseye main
+deb-src http://mirror.yandex.ru/debian bullseye main
+deb http://mirror.yandex.ru/debian-security bullseye-security main
+deb-src http://mirror.yandex.ru/debian-security bullseye-security main
+deb http://mirror.yandex.ru/debian bullseye-updates main
+deb-src http://mirror.yandex.ru/debian bullseye-updates main
+deb http://mirror.yandex.ru/debian bullseye-backports main
+deb-src http://mirror.yandex.ru/debian bullseye-backports main
 EOF
 echo 
 sleep 0.5
