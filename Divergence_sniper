@@ -1,0 +1,347 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © OnlyStars
+
+//@version=5
+indicator(title="Divergence sniper", shorttitle="Divergence sniper", format=format.price, max_lines_count = 500, max_labels_count = 500, max_bars_back=500, max_boxes_count = 500)
+len = input.int(9, minval=1, title="Length", group = "📉 Fisher")
+topf = hline(65, title="Upper Fisher", color=#1495ff9e, linestyle = hline.style_dotted, editable = false)
+botf = hline(35, title="Lower Fisher", color=#1495ff9e, linestyle = hline.style_dotted, editable = false)
+high_ = ta.highest(hl2, len)
+low_ = ta.lowest(hl2, len)
+
+round_(val) => val > .99 ? .999 : val < -.99 ? -.999 : val
+value = 0.0
+value := round_(.66 * ((hl2 - low_) / (high_ - low_) - .5) + .67 * nz(value[1]))
+fish1 = 0.0
+fish1 := .5 * math.log((1 + value) / (1 - value)) + .5 * nz(fish1[1])
+y = math.abs(fish1)
+n = bar_index
+m = n<len? 1 : math.min(n-len+1,500)
+
+t = ta.wma(y,m)
+f = 100-100/(math.pow(1+1/t,fish1)+1)
+
+fish2 = f[1]
+plot(f, color= #299fff)
+buy = ta.crossover(ta.change(f),0) and f<35
+sell = ta.crossunder(ta.change(f),0) and f>65
+for i = 0 to len-1
+    buy:= buy and buy[i+1]==false
+    sell:= sell and sell[i+1]==false
+
+//bgcolor(color = buy? #00ff001a : sell? #ff000026 : na, display= display.all)
+barcolor(color = buy? #00ff00 : sell? #ff0000 : na, display= display.all)
+
+// Divergence
+Right = 5
+Left = 5
+rangeUpper = 50
+rangeLower = 5
+bearColor = color.red
+bullColor = color.green
+textColor = color.white
+noneColor = color.new(color.white, 100)
+
+plFound = na(ta.pivotlow(f, Left, Right)) ? false : true
+phFound = na(ta.pivothigh(f, Left, Right)) ? false : true
+_inRange(cond) =>
+	bars = ta.barssince(cond == true)
+	rangeLower <= bars and bars <= rangeUpper
+
+// Regular Bullish
+// Higher Low
+
+fHL = f[Right] > ta.valuewhen(plFound, f[Right], 1) and _inRange(plFound[1])
+
+// Price: Lower Low
+
+priceLL = low[Right] < ta.valuewhen(plFound, low[Right], 1)
+bullCondAlert = priceLL and fHL and plFound
+bullCond = bullCondAlert
+
+plot(plFound ? f[Right] : na, offset=-Right, title="Regular Bullish", linewidth=2, color=(bullCond ? bullColor : noneColor), display = display.pane)
+plotshape(bullCond ? f[Right] : na, offset=-Right, title="Regular Bullish Label", text="Df", style=shape.triangleup, size=size.tiny, location=location.bottom, color=#02d437, textcolor=#fbff0c, force_overlay = true)
+plotshape(buy ? f : na, style=shape.circle, size=size.tiny, location=location.absolute, color=#02d437)
+plotshape(sell ? f : na, style=shape.circle, size=size.tiny, location=location.absolute, color=color.yellow)
+// Regular Bearish
+// Lower High
+
+fLH = f[Right] < ta.valuewhen(phFound, f[Right], 1) and _inRange(phFound[1])
+
+// Price: Higher High
+
+priceHH = high[Right] > ta.valuewhen(phFound, high[Right], 1)
+bearCondAlert = priceHH and fLH and phFound
+bearCond = bearCondAlert
+
+plot(phFound ? f[Right] : na, offset=-Right, title="Regular Bearish", linewidth=2, color=(bearCond ? bearColor : noneColor), display = display.pane)
+plotshape(bearCond ? f[Right] : na, offset=-Right, title="Regular Bearish Label", text="Df", style=shape.triangledown, size=size.tiny, location=location.top, color=#df0000, textcolor=#fbff0c, force_overlay = true)
+
+//W%R + Div
+// Input settings
+Lenw = input.int(34, title="W Length", group = "📉 Williams R", minval=1)
+obL = input.int(84, title="W-OB Level", minval=-100, maxval=100)
+osL = input.int(16, title="W-OS Level", minval=-100, maxval=100)
+
+hh = ta.highest(high, Lenw)
+ll = ta.lowest(low, Lenw)
+wr = 100 - (100 * (close - hh) / (hh - ll) * -1)
+
+// Plot
+plot(wr, title="W%R+", color=#03ff18, linewidth=1)
+hline(obL, "W-OB Level", color=#e41a1a99, linestyle = hline.style_solid, display = display.all,editable = true)
+hline(osL, "W-OS Level", color=#e41a1a99, linestyle = hline.style_solid, display = display.all,editable = true)
+msBullColor2 = #fff9c4
+msBearColor2 = #3179f5
+upperBand = plot(100, 'Overbought Level', color(na), display = display.none,editable = false)
+upperBand2 = plot(130, 'Overbought Level2', color(na), display = display.none, editable = false)
+lowerBand = plot(0, 'Oversold Level', color(na), display = display.none, editable = false)
+lowerBand2 = plot(-25, 'Oversold Level2', color(na), display = display.none, editable = false)
+
+fill(upperBand, upperBand2, 130, 100, top_color = color.new(msBearColor2,   100), bottom_color = color.new(msBearColor2, 70))
+fill(lowerBand, lowerBand2, 0, -25, top_color = color.new(msBullColor2,   70), bottom_color = color.new(msBullColor2, 100))
+// Generate Buy and Sell signals
+buyS = ta.crossover(wr, osL)
+sellS = ta.crossunder(wr, obL)
+plotshape(buyS ? wr : na, style=shape.circle, size=size.tiny, location=location.absolute, color=#02d437)
+plotshape(sellS ? wr : na, style=shape.circle, size=size.tiny, location=location.absolute, color=color.yellow)
+// Plot Buy and Sell signals on the chart
+l_ob = obL
+l_obwr = wr > l_ob ? wr : l_ob
+
+l_os = osL
+l_oswr = wr < l_os ? wr : l_os
+
+// Divergence
+Rt = 5
+Lt = 5
+rangeUp = 50
+rangeLow = 5
+bearCol = #e65454
+bullCol = #4cafaf
+textCol = color.white
+noneCol = color.new(color.white, 100)
+
+plF = na(ta.pivotlow(wr, Lt, Rt)) ? false : true
+phF = na(ta.pivothigh(wr, Lt, Rt)) ? false : true
+inRange(cond) =>
+	bars = ta.barssince(cond == true)
+	rangeLow <= bars and bars <= rangeUp
+
+// Regular Bullish
+// Higher Low
+
+wrHL = wr[Rt] > ta.valuewhen(plF, wr[Rt], 1) and inRange(plF[1])
+
+// Price: Lower Low
+
+priceLLw = low[Rt] < ta.valuewhen(plF, low[Rt], 1)
+bullCondA = priceLLw and wrHL and plF
+bullCondw = bullCondA
+
+plot(plF ? wr[Rt] : na, offset=-Rt, title="W-Regular Bullish", linewidth=2, color=(bullCondw ? bullCol : noneColor), display = display.pane)
+plotshape(bullCondw ? wr[Rt] : na, offset=-Rt, title="W-Regular Bullish Label", text="Dw", style=shape.triangleup, size=size.tiny, location=location.bottom, color=#02d437, textcolor=#fbff0c, force_overlay = true)
+//plotshape(bullCondw ? wr[Rt] : na, title="W Bullish", text="Dw", style=shape.triangleup, size=size.tiny, location=location.belowbar, color=#02d437, textcolor=#fbff0c, force_overlay = true)
+//------------------------------------------------------------------------------
+// Regular Bearish
+// Lower High
+
+wrLH = wr[Rt] < ta.valuewhen(phF, wr[Rt], 1) and inRange(phF[1])
+
+// Price: Higher High
+
+priceHHw = high[Rt] > ta.valuewhen(phF, high[Rt], 1)
+bearCondA = priceHHw and wrLH and phF
+bearCondw = bearCondA
+
+plot(phF ? wr[Rt] : na, offset=-Rt, title="W-Regular Bearish", linewidth=2, color=(bearCondw ? bearCol : noneColor), display = display.pane)
+plotshape(bearCondw ? wr[Rt] : na, offset=-Rt, title="W-Regular Bearish Label", text="Dw", style=shape.triangledown, size=size.tiny, location=location.top, color=#df0000, textcolor=#fbff0c, force_overlay = true)
+//plotshape(bearCondw ? wr[Rt] : na, title="W Bearish", text="Dw", style=shape.triangledown, size=size.tiny, location=location.abovebar, color=#df0000, textcolor=#fbff0c, force_overlay = true)
+barcolor(color = buyS? color.rgb(0,255,0) : sellS? color.rgb(255,0,0) : na, display= display.all)
+//bgcolor(color = buyS? color.rgb(0,255,0,90) : sellS? color.rgb(255,0,0,85) : na, display= display.all)
+
+var label myLabel = na
+if (bar_index == 0)
+    myLabel := label.new(x=bar_index-1, y=wr, text="W", style=label.style_label_left, textcolor=color.lime, color=color.new(color.white, 100))
+label.set_xy(myLabel, bar_index-1, wr)
+
+var label myL = na
+if (bar_index == 0)  
+    myL := label.new(x=bar_index, y=f, text="F", style=label.style_label_left, textcolor=#299fff, color=color.new(color.white, 100))
+label.set_xy(myL, bar_index, f)
+
+// BB 
+lenBB = input.int(20, minval=1, group = "📉 Bollinger Osc")
+multBB = input.float(2.0, minval=0.001, maxval=50, title="StdDev")
+topBB = input.int(100, title="BB-OB Level", minval=-100, maxval=100, display= display.all)
+botBB = input.int(0, title="BB-OS Level", minval=-100, maxval=100, display= display.all)
+
+basis = ta.sma(close, lenBB)
+dev = multBB * ta.stdev(close, lenBB)
+upperBB = basis + dev
+lowerBB = basis - dev
+bbr = 100*(close - lowerBB)/(upperBB - lowerBB)
+plbbr = plot(bbr, "Bollinger Bands %b", color=#ff9317)
+
+var label myBB = na
+if (bar_index == 0)  
+    myBB := label.new(x=bar_index+1, y=bbr, text="B", style=label.style_label_left, textcolor=#ff9317, color=color.new(color.white, 100))
+label.set_xy(myBB, bar_index+1, bbr)
+
+buyBB = ta.crossover(bbr, botBB)
+sellBB = ta.crossunder(bbr, topBB)
+plotshape(buyBB ? bbr : na, style=shape.circle, size=size.tiny, location=location.absolute, color=#02d437)
+plotshape(sellBB ? bbr : na, style=shape.circle, size=size.tiny, location=location.absolute, color=color.yellow)
+//bgcolor(color = buyBB? color.rgb(0,255,0,90) : sellBB? color.rgb(255,0,0,85) : na, display= display.all)
+barcolor(color = buyBB? #00ff00 : sellBB? color.rgb(255,0,0) : na, display= display.all)
+mline=plot(50,title='midline', display = display.none)
+fill(plbbr, mline, 130, 60, top_color = color.new(#fff9c4, 30), bottom_color = color.new(#ff9317, 100), title = "Bullish Grad")
+fill(plbbr, mline, 50, -30, top_color = color.new(#3179f5, 100), bottom_color = color.new(#3179f5, 0), title = "Bullish Grad")
+
+// Divergence
+Rb = 5
+Lb = 5
+rangeUpb = 50
+rangeLowb = 5
+bearColb = #e65454
+bullColb = #4cafaf
+textColb = color.white
+noneColb = color.new(color.white, 100)
+
+plFb = na(ta.pivotlow(bbr, Lb, Rb)) ? false : true
+phFb = na(ta.pivothigh(bbr, Lb, Rb)) ? false : true
+inRangeb(cond) =>
+	bars = ta.barssince(cond == true)
+	rangeLow <= bars and bars <= rangeUpb
+
+// Regular Bullish
+// Higher Low
+
+bbrHL = bbr[Rb] > ta.valuewhen(plFb, bbr[Rb], 1) and inRangeb(plFb[1])
+
+// Price: Lower Low
+
+priceLLwb = low[Rb] < ta.valuewhen(plFb, low[Rb], 1)
+bullCondb = priceLLwb and bbrHL and plFb
+bullCondbb = bullCondb
+
+plot(plFb ? bbr[Rb] : na, offset=-Rb, title="B-Regular Bullish", linewidth=2, color=(bullCondbb ? bullCol : noneColor), display = display.pane)
+plotshape(bullCondbb ? bbr[Rb] : na, offset=-Rb, title="B-Regular Bullish Label", text="Db", style=shape.triangleup, size=size.tiny, location=location.bottom, color=#02d437, textcolor=#fbff0c, force_overlay = true)
+//plotshape(bullCondbb ? wr[Rt] : na, title="W Bullish", text="Dw", style=shape.triangleup, size=size.tiny, location=location.belowbar, color=#02d437, textcolor=#fbff0c, force_overlay = true)
+
+// Regular Bearish
+// Lower High
+
+bbrLH = bbr[Rb] < ta.valuewhen(phFb, bbr[Rb], 1) and inRangeb(phFb[1])
+
+// Price: Higher High
+
+priceHHb = high[Rb] > ta.valuewhen(phFb, high[Rb], 1)
+bearCondb = priceHHb and bbrLH and phFb
+bearCondbb = bearCondb
+
+plot(phFb ? bbr[Rb] : na, offset=-Rb, title="B-Regular Bearish", linewidth=2, color=(bearCondbb ? bearCol : noneColor), display = display.pane)
+plotshape(bearCondbb ? bbr[Rb] : na, offset=-Rb, title="B-Regular Bearish Label", text="Db", style=shape.triangledown, size=size.tiny, location=location.top, color=#df0000, textcolor=#fbff0c, force_overlay = true)
+
+//EMA
+ema = input.int(200, minval=1, maxval=350, title="EMA-S", group = "📉 EMA")
+emaf = input.int(21, minval=1, maxval=300, title="EMA-F")
+sma = input.int(20, minval=1, maxval=350, title="SMA")
+e1 = ta.ema(close, ema)
+e2 = ta.ema(close, emaf)
+s1 = ta.sma(close, sma)
+emaUpColor() => close >= e1
+emaDownColor() => close  < e1
+col = close  >= e1 ? #299fff : close  < e1 ? color.yellow : color.white
+colorsma = hl2 >= e2 ?  #299fff : hl2  < e2 ? color.yellow : color.white
+colorema = hl2 >= s1 ?  #299fff : hl2  < s1 ? color.yellow : color.white
+plot(e1, title="EMA-S", style=plot.style_line, linewidth=1, color=color.white, force_overlay=true)
+//plot(e2, title="EMA-F", style=plot.style_line, linewidth=1, color=colorema, force_overlay=true)
+plot(s1, title="SMA", style=plot.style_line, linewidth=1, color=colorsma, force_overlay=true)
+
+//MACD
+
+fast_length = input.int(8, title="Fast Length", group = "📉 MACD")
+slow_length = input.int(34, title="Slow Length")
+src = input.source(close, title="Source")
+signal_length = input.int(9, title="Signal Smoothing", minval=1, maxval=50)
+sma_source = input.string("EMA", title="Oscillator MA Type", options=["SMA", "EMA"])
+sma_signal = input.string("EMA", title="Signal Line MA Type", options=["SMA", "EMA"])
+
+// Расчёт MACD
+fast_ma = sma_source == "SMA" ? 0.001*ta.sma(src, fast_length) : ta.ema(src, fast_length)
+slow_ma = sma_source == "SMA" ? 0.001*ta.sma(src, slow_length) : ta.ema(src, slow_length)
+macd = (fast_ma - slow_ma)
+signal = sma_signal == "SMA" ? ta.sma(macd, signal_length) : ta.ema(macd, signal_length)
+hist = macd - signal
+
+// Параметры для дивергенций
+lbRM = input.int(5, title="Pivot Lookback Right")
+lbLM = input.int(5, title="Pivot Lookback Left")
+rangeUpM = input.int(50, title="Max of Lookback Range")
+rangeLowerM = input.int(5, title="Min of Lookback Range")
+
+// Цвета для дивергенций
+bearColorM = #d33838
+bullColorM = #21da7d
+hiddenBullColor = color.new(color.green, 80)
+hiddenBearColor = color.new(color.red, 80)
+
+oscM = macd
+
+plFoundM = not na(ta.pivotlow(oscM, lbLM, lbRM))
+phFoundM = not na(ta.pivothigh(oscM, lbLM, lbRM))
+
+_inRangeM(cond) =>
+    bars = ta.barssince(cond)
+    rangeLowerM <= bars and bars <= rangeUpM
+
+// Регулярная бычья дивергенция
+oscHLM = oscM[lbRM] > ta.valuewhen(plFoundM, oscM[lbRM], 1) and _inRangeM(plFoundM[1]) and oscM[lbRM] < 0
+priceLLM = low[lbRM] < ta.valuewhen(plFoundM, low[lbRM], 1)
+
+bullCondM = priceLLM and oscHLM and plFoundM
+
+//plot(plFound ? osc[lbR] : na, offset=-lbR, title="Regular Bullish", linewidth=2, color=(bullCond ? bullColor : noneColor))
+plotshape(bullCondM ? oscM[lbRM] : na, title="Regular Bullish Label", text="Dm", style=shape.triangleup, size=size.tiny, location=location.bottom, color=#02d437, textcolor=#fbff0c, force_overlay = true)
+
+// Регулярная медвежья дивергенция
+oscLHM = oscM[lbRM] < ta.valuewhen(phFoundM, oscM[lbRM], 1) and _inRangeM(phFoundM[1]) and oscM[lbRM] > 0
+priceHHM = high[lbRM] > ta.valuewhen(phFoundM, high[lbRM], 1)
+bearCondM = priceHHM and oscLHM and phFoundM and (ta.lowest(oscM, lbLM + lbRM + 5) > 0)
+
+//plot(phFound ? osc[lbR] : na, offset=-lbR, title="Regular Bearish", linewidth=2, color=(bearCond ? bearColor : noneColor))
+plotshape(bearCondM ? oscM[lbRM] : na, title="Regular Bearish Label", text="Dm", style=shape.triangledown, size=size.tiny, location=location.top, color=#df0000, textcolor=#fbff0c, force_overlay = true)
+
+buySignal = ta.crossover(macd, signal)
+sellSignal = ta.crossunder(macd, signal)
+
+//bgcolor(color = buySignal? #00ff003a : sellSignal? #ff00002f : na, display= display.all)
+//barcolor(color = buySignal? color.rgb(0,255,0) : sellSignal? color.rgb(255,0,0) : na, display= display.all)
+// Plot Buy and Sell signals on the chart
+plotshape(buySignal, text="M", style=shape.circle, location=location.belowbar, color=#01ff01, textcolor=#fbff0c, title="Buy Signal", force_overlay = true)
+plotshape(sellSignal, text="M", style=shape.circle, location=location.abovebar, color=#ff2727, textcolor=#fbff0c, title="Sell Signal", force_overlay = true)
+
+//Volume Divergence
+
+groupDivergences = '📉 Volume Divergences Signals'
+priceLookBack = input.int(20, 'Price and volume Lookback', group = groupDivergences)
+bullSensitivity =   input.int(3,  'Bull Sensitivity',minval=1, group = groupDivergences) + 1
+bearSensitivity =   input.int(4,  'Bear Sensitivity',minval=1, group = groupDivergences) + 1
+
+// Bullish Divergence
+priceLowerLows    = ta.lowest(low, priceLookBack) == ta.lowest(low, priceLookBack * bullSensitivity)
+lowVol1 = ta.lowest(volume, priceLookBack)
+lowVol2 = ta.lowest(volume, priceLookBack * bullSensitivity)
+volumeHigherLows  = lowVol1 > lowVol2
+bullishDivergence = priceLowerLows and volumeHigherLows and not (priceLowerLows and volumeHigherLows)[1]
+
+// Bearish Divergence
+priceHigherHighs  = ta.highest(high, priceLookBack) == ta.highest(high, priceLookBack * bearSensitivity)
+highVol1 = ta.highest(volume, priceLookBack) 
+highVol2 = ta.highest(volume, priceLookBack * bearSensitivity)
+volumeLowerHighs  = highVol1 < highVol2
+bearishDivergence = priceHigherHighs and volumeLowerHighs and not (priceHigherHighs and volumeLowerHighs)[1]
+
+plotshape(bullishDivergence, 'Bullish Divergence', shape.circle, location.bottom, color.lime, text='Dv', textcolor=color.yellow, size=size.tiny, force_overlay = true)
+plotshape(bearishDivergence, 'Bearish Divergence', shape.circle, location.top, color.red, text='Dv', textcolor=color.yellow, size=size.tiny, force_overlay = true)
