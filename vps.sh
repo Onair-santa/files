@@ -586,6 +586,20 @@ nft_optimizations() {
     sleep 0.5
 
     # Open default ports.
+    sudo nft add table netdev drop-bad-packets
+    sudo nft add chain netdev drop-bad-packets ingress { type filter hook ingress priority -300 \; }
+    sudo nft add rule netdev drop-bad-packets ingress tcp flags \& \(fin \| psh \| urg\) == \(fin \| psh \| urg\) drop
+    sudo nft add rule netdev drop-bad-packets ingress tcp flags \& \(fin \| syn \| rst \| psh \| ack \| urg\) == 0x0 drop
+    sudo nft add rule netdev drop-bad-packets ingress tcp flags syn tcp option maxseg size 1-535 drop
+
+    sudo nft add chain netdev drop-bad-packets ingress-ens3 { type filter hook ingress device "$INTERFACE" priority -450 \; policy accept \; }
+    sudo nft add rule netdev drop-bad-packets ingress-ens3 goto ingress
+
+    sudo nft add table inet drop-bad-ct-states
+    sudo nft add chain inet drop-bad-ct-states prerouting { type filter hook prerouting priority mangle \; policy accept \; }
+    sudo nft add rule inet drop-bad-ct-states prerouting ct state invalid drop
+    sudo nft add rule inet drop-bad-ct-states prerouting ct state new tcp flags \& \(fin \| syn \| rst \| ack\) != syn drop
+    
     sudo nft add rule inet filter input iifname lo accept
     sudo nft add rule inet filter input ct state established,related accept
     sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport "$SSH_PORT" accept
@@ -593,6 +607,7 @@ nft_optimizations() {
     sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 443 accept
     sudo nft add rule inet filter input iifname "$INTERFACE" udp dport 1024-65535 accept
     sudo nft add rule inet filter input ip saddr 185.204.2.249 icmp type echo-request accept
+    sudo nft add rule inet filter input reject
     sudo nft add chain inet filter input '{ policy drop; }'
     sleep 0.5
     echo '#!/usr/sbin/nft -f' > /etc/nftables.conf
