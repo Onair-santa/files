@@ -632,23 +632,6 @@ table inet filter {
 }
 EOF
 sed -i "s/ens3/$INTERFACE/" $NFTCONF
-#    sudo nft add rule inet filter input iifname lo accept
-#    sudo nft add rule inet filter input ct state established,related accept
-#   sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport "$SSH_PORT" accept
-#    sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 80 accept
-#   sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 443 accept
-#   sudo nft add rule inet filter input iifname "$INTERFACE" udp dport 1024-65535 accept
-#   sudo nft add rule inet filter input ip saddr 185.204.2.249 icmp type echo-request accept
-#   sudo nft add rule inet filter input reject
-#   sudo nft add chain inet filter input '{ policy drop; }'
-#   sleep 0.5
-#   echo '#!/usr/sbin/nft -f' > /etc/nftables.conf
-#   sleep 0.5
-#  echo 'flush ruleset' >> /etc/nftables.conf
-#  sleep 0.5
-#   sudo nft list ruleset | sudo tee -a /etc/nftables.conf
-
-    # Enable & Reload
     sudo systemctl restart nftables
     echo 
     green_msg 'NFT is Installed (Ports TCP 2222, 80, 443 UDP 1024-65535 is opened)'
