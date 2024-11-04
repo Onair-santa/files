@@ -32,17 +32,7 @@ cyn_msg() {
 HOST_PATH="/etc/hosts"
 DNS_PATH="/etc/resolv.conf"
 
-
-# Intro
-echo 
-green_msg '================================================================='
-cyn_msg   'This script will automatically Optimize your Linux Server.'
-cyn_msg   'Tested on: Ubuntu 20+, Debian 11+'
-cyn_msg   'Root access is required.'  
-green_msg '================================================================='
-echo 
-
-
+ 
 # Root
 check_if_running_as_root() {
     # If you want to run as another user, please modify $EUID to be owned by this user
