@@ -586,68 +586,67 @@ nft_optimizations() {
     sleep 0.5
 
     # Open default ports.
-    #NFTCONF="/etc/nftables.conf"
-    #cat >/etc/nftables.conf <<-\EOF
-    #!/usr/sbin/nft -f
+NFTCONF="/etc/nftables.conf"
+cat >/etc/nftables.conf <<-\EOF
+#!/usr/sbin/nft -f
 
-    #flush ruleset
+flush ruleset
 
-    #table netdev drop-bad-packets {
-    #    chain ingress {
-    #        tcp flags & (fin | psh | urg) == fin | psh | urg drop
-    #        tcp flags & (fin | syn | rst | psh | ack | urg) == 0x0 drop
-    #        tcp flags syn tcp option maxseg size 1-535 drop
-    #    }
-    #    chain ingress-ens3 {
-    #        type filter hook ingress device "ens3" priority -450; policy accept;
-    #        goto ingress
-    #    }
-    #}
-#
-    #table inet drop-bad-ct-states {
-    #    chain prerouting {
-    #        type filter hook prerouting priority -150; policy accept;
-    #        ct state invalid drop
-    #        ct state new tcp flags & (fin | syn | rst | ack) != syn drop
-    #    }
-    #}
-#
-    #table inet filter {
-#	chain input {
-#    #        type filter hook input priority filter; policy drop;
-#	#    iifname "lo" accept
-#	#    ct state established,related accept
-#	#    iifname "ens3" tcp dport 2222 accept
-#	    iifname "ens3" tcp dport 80 accept
-#	#    iifname "ens3" tcp dport 443 accept
-#	#    iifname "ens3" udp dport 1024-65535 accept
-#	#    ip saddr 185.204.2.249 icmp type echo-request accept
-#     #       reject
-#	#}
-#	#chain forward {
-#	#	type filter hook forward priority filter; policy accept;
-#	#}
-#	chain output {
-#		type filter hook output priority filter; policy accept;
-#	}
-#    }
-#    EOF
-#    sed -i "s/ens3/${INTERFACE}/" $NFTCONF
-    sudo nft add rule inet filter input iifname lo accept
-    sudo nft add rule inet filter input ct state established,related accept
-    sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport "$SSH_PORT" accept
-    sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 80 accept
-    sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 443 accept
-    sudo nft add rule inet filter input iifname "$INTERFACE" udp dport 1024-65535 accept
-    sudo nft add rule inet filter input ip saddr 185.204.2.249 icmp type echo-request accept
-    sudo nft add rule inet filter input reject
-    sudo nft add chain inet filter input '{ policy drop; }'
-    sleep 0.5
-    echo '#!/usr/sbin/nft -f' > /etc/nftables.conf
-    sleep 0.5
-    echo 'flush ruleset' >> /etc/nftables.conf
-    sleep 0.5
-    sudo nft list ruleset | sudo tee -a /etc/nftables.conf
+table netdev drop-bad-packets {
+    chain ingress {
+        tcp flags & (fin | psh | urg) == fin | psh | urg drop
+        tcp flags & (fin | syn | rst | psh | ack | urg) == 0x0 drop
+        tcp flags syn tcp option maxseg size 1-535 drop
+    }
+    chain ingress-ens3 {
+        type filter hook ingress device "ens3" priority -450; policy accept;
+        goto ingress
+    }
+}
+
+table inet drop-bad-ct-states {
+    chain prerouting {
+        type filter hook prerouting priority -150; policy accept;
+        ct state invalid drop
+        ct state new tcp flags & (fin | syn | rst | ack) != syn drop
+    }
+}
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+        iifname "lo" accept
+	ct state established,related accept
+        iifname "ens3" tcp dport 2222 accept
+        iifname "ens3" tcp dport 80 accept
+        iifname "ens3" tcp dport 443 accept
+        iifname "ens3" udp dport 1024-65535 accept
+        reject
+    }
+    chain forward {
+	type filter hook forward priority filter; policy accept;
+    }
+    chain output {
+	type filter hook output priority filter; policy accept;
+    }
+}
+EOF
+sed -i "s/ens3/$INTERFACE/" $NFTCONF
+#    sudo nft add rule inet filter input iifname lo accept
+#    sudo nft add rule inet filter input ct state established,related accept
+#   sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport "$SSH_PORT" accept
+#    sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 80 accept
+#   sudo nft add rule inet filter input iifname "$INTERFACE" tcp dport 443 accept
+#   sudo nft add rule inet filter input iifname "$INTERFACE" udp dport 1024-65535 accept
+#   sudo nft add rule inet filter input ip saddr 185.204.2.249 icmp type echo-request accept
+#   sudo nft add rule inet filter input reject
+#   sudo nft add chain inet filter input '{ policy drop; }'
+#   sleep 0.5
+#   echo '#!/usr/sbin/nft -f' > /etc/nftables.conf
+#   sleep 0.5
+#  echo 'flush ruleset' >> /etc/nftables.conf
+#  sleep 0.5
+#   sudo nft list ruleset | sudo tee -a /etc/nftables.conf
 
     # Enable & Reload
     sudo systemctl restart nftables
