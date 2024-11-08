@@ -313,7 +313,7 @@ installations() {
     sleep 0.5
 
     # Networking packages
-    sudo apt -q -y install nftables speedtest-cli
+    sudo apt -q -y install nftables speedtest-cli cbm
 
     # System utilities
     sudo apt -q -y install curl wget 
