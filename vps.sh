@@ -202,8 +202,8 @@ fix_etc_hosts
 sleep 0.5
 
 # Fix DNS
-fix_dns
-sleep 0.5
+#fix_dns
+#sleep 0.5
 
 # Timezone
 set_timezone
@@ -760,6 +760,11 @@ else
 fi
 }
 
+#ByeDPI
+ciadpi() {
+bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
+}
+
 # Synth Shell
 synth_shell() {
 sudo apt install bc fonts-powerline git -y
@@ -824,6 +829,7 @@ show_menu() {
     yellow_msg '13. - Fail2ban'
     yellow_msg '14. - DNSproxy DNS Resolver'
     yellow_msg '15. - Repository Debian11'
+    yellow_msg '16. - ByeDPI'
     echo 
     red_msg 'Q - Exit'
     echo 
@@ -1065,6 +1071,13 @@ main() {
             green_msg  'Done.'
             green_msg '========================='
             ;;
+	16)
+            ciadpi
+	    sleep 0.5
+            green_msg '========================='
+            green_msg  'Done.'
+            green_msg '========================='
+            ;;            
         q)
             exit 0
             ;;
