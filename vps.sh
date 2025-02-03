@@ -712,13 +712,12 @@ Cache=no-negative
 #ResolveUnicastSingleLabel=no
 EOF
 sudo systemctl restart systemd-resolved
-systemd-resolve --status | grep 'DNS Servers' -A2
+systemd-resolved --status | grep 'DNS Servers' -A2
 sleep 0.5
 }
 
 dnsproxy() {
-systemctl stop systemd-resolve
-systemctl disable systemd-resolve
+systemctl disable systemd-resolved --now
 # Get the latest dnsproxy version from GitHub
 VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
 echo "Latest AdguardTeam dnsproxy version is $VERSION"
@@ -783,27 +782,7 @@ sleep 1
 
 #3X-UI
 xui() {
-ARCH=$(uname -m)
-case "${ARCH}" in
-  x86_64 | x64 | amd64) XUI_ARCH="amd64" ;;
-  i*86 | x86) XUI_ARCH="386" ;;
-  armv8* | armv8 | arm64 | aarch64) XUI_ARCH="arm64" ;;
-  armv7* | armv7) XUI_ARCH="armv7" ;;
-  armv6* | armv6) XUI_ARCH="armv6" ;;
-  armv5* | armv5) XUI_ARCH="armv5" ;;
-  s390x) echo 's390x' ;;
-  *) XUI_ARCH="amd64" ;;
-esac
-wget https://github.com/MHSanaei/3x-ui/releases/latest/download/x-ui-linux-${XUI_ARCH}.tar.gz
-cd /root/
-rm -rf x-ui/ /usr/local/x-ui/ /usr/bin/x-ui
-tar zxvf x-ui-linux-${XUI_ARCH}.tar.gz
-chmod +x x-ui/x-ui x-ui/bin/xray-linux-* x-ui/x-ui.sh
-cp x-ui/x-ui.sh /usr/bin/x-ui
-cp -f x-ui/x-ui.service /etc/systemd/system/
-mv x-ui/ /usr/local/
-systemctl daemon-reload
-systemctl enable x-ui --now
+bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
 }
 
 # Repo Debian 11
