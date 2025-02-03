@@ -839,7 +839,7 @@ show_menu() {
     echo 
     yellow_msg '              Choose One Option: '
     echo 
-    green_msg '1.  - Update + SystemDNSResolver + Packages + Net, SSH, Sys Limits + PubKey + NFT + Fail2ban + Synth-Shell'
+    green_msg '1.  - Update + DNSproxyResolver + Packages + Net, SSH, Sys Limits + PubKey + NFT + Fail2ban + Synth-Shell'
     green_msg '2.  - Update + Net, SSH, Sys Limits + NFT'
     green_msg '3.  - Update + Net, SSH, Sys Limits'
     echo 
@@ -854,10 +854,11 @@ show_menu() {
     yellow_msg '11. - NFT(open ports 2222 443 80, udp 1024-65535)'
     yellow_msg '12. - Synth-Shell'
     yellow_msg '13. - Fail2ban'
-    yellow_msg '14. - DNSproxy DNS Resolver'
-    yellow_msg '15. - Repository Debian11'
-    yellow_msg '16. - ByeDPI'
-    yellow_msg '17. - X-UI'
+    echo
+    green_msg '14. - DNSproxy DNS Resolver'
+    green_msg '15. - Repository Debian11'
+    green_msg '16. - ByeDPI'
+    green_msg '17. - X-UI'
     echo 
     red_msg 'Q - Exit'
     echo 
