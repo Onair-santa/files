@@ -92,24 +92,24 @@ fix_etc_hosts(){
 
 
 # Fix DNS
-fix_dns(){
-    echo 
-    yellow_msg "Fixing DNS Temporarily." 
-    sleep 0.5
+#fix_dns(){
+#    echo 
+#    yellow_msg "Fixing DNS Temporarily." 
+#    sleep 0.5
 
-    cp $DNS_PATH /etc/resolv.conf.bak
-    yellow_msg "Default resolv.conf file saved. Directory: /etc/resolv.conf.bak" 
-    sleep 0.5
+#    cp $DNS_PATH /etc/resolv.conf.bak
+#    yellow_msg "Default resolv.conf file saved. Directory: /etc/resolv.conf.bak" 
+#    sleep 0.5
 
-    sed -i '/nameserver/d' $DNS_PATH
+#    sed -i '/nameserver/d' $DNS_PATH
 
-    echo "nameserver 8.8.8.8" >> $DNS_PATH
-    echo "nameserver 8.8.4.4" >> $DNS_PATH
+#    echo "nameserver 8.8.8.8" >> $DNS_PATH
+#    echo "nameserver 8.8.4.4" >> $DNS_PATH
  
-    green_msg "DNS Fixed Temporarily."
-    echo 
-    sleep 0.5
-}
+#    green_msg "DNS Fixed Temporarily."
+#    echo 
+#    sleep 0.5
+#}
 
 
 # Timezone
@@ -700,7 +700,7 @@ DNS=8.8.8.8 1.1.1.1
 FallbackDNS=8.8.4.4 1.0.0.1
 #Domains=
 #DNSSEC=no
-#DNSOverTLS=no
+DNSOverTLS=yes
 #MulticastDNS=yes
 #LLMNR=yes
 Cache=no-negative
@@ -712,6 +712,52 @@ EOF
 sudo systemctl restart systemd-resolved
 systemd-resolve --status | grep 'DNS Servers' -A2
 sleep 0.5
+}
+
+dnsproxy() {
+systemctl stop systemd-resolve
+systemctl disable systemd-resolve
+# Get the latest dnsproxy version from GitHub
+VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
+echo "Latest AdguardTeam dnsproxy version is $VERSION"
+
+# Download and extract dnsproxy
+wget -O dnsproxy.tar.gz "https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
+tar -xzvf dnsproxy.tar.gz
+cd linux-amd64
+
+# Install dnsproxy
+sudo mv dnsproxy /usr/bin/dnsproxy
+
+# Create dnsproxy systemd service file
+cat << EOF | sudo tee /etc/systemd/system/dnsproxy.service
+[Unit]
+Description=DNS Proxy
+After=network.target
+Requires=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/dnsproxy -l 127.0.0.1 -p 53 -u https://dns.google/dns-query -b 8.8.8.8:53 -f 1.1.1.1:53
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd and enable dnsproxy service
+sudo systemctl daemon-reload
+sudo systemctl enable --now dnsproxy
+
+# Configure /etc/resolv.conf to use local dnsproxy
+echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
+
+# Check DNS resolution and print success message
+if host google.com &> /dev/null; then
+    echo "DNS proxy is working correctly!"
+else
+    echo "Error: DNS proxy setup failed."
+fi
 }
 
 # Synth Shell
@@ -776,7 +822,7 @@ show_menu() {
     yellow_msg '11. - NFT(open ports 2222 443 80, udp 1024-65535)'
     yellow_msg '12. - Synth-Shell'
     yellow_msg '13. - Fail2ban'
-    yellow_msg '14. - Systemd DNS Resolver'
+    yellow_msg '14. - DNSproxy DNS Resolver'
     yellow_msg '15. - Repository Debian11'
     echo 
     red_msg 'Q - Exit'
@@ -792,7 +838,7 @@ main() {
         case $choice in
         1)
 	    repo_debian
-            systemd_resolved
+            dnsproxy
             complete_update
             sleep 0.5
 
@@ -1003,7 +1049,7 @@ main() {
             green_msg '========================='
             ;;
 	14)
-            systemd_resolved
+            dnsproxy
             sleep 0.5
             
             echo 
