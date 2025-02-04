@@ -717,7 +717,6 @@ sleep 0.5
 }
 
 dnsproxy() {
-systemctl disable systemd-resolved --now
 # Get the latest dnsproxy version from GitHub
 VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
 echo "Latest AdguardTeam dnsproxy version is $VERSION"
@@ -749,6 +748,7 @@ EOF
 # Reload systemd and enable dnsproxy service
 sudo systemctl daemon-reload
 sudo systemctl enable --now dnsproxy
+systemctl disable systemd-resolved --now
 
 # Configure /etc/resolv.conf to use local dnsproxy
 echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
