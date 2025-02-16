@@ -91,27 +91,6 @@ fix_etc_hosts(){
 }
 
 
-# Fix DNS
-#fix_dns(){
-#    echo 
-#    yellow_msg "Fixing DNS Temporarily." 
-#    sleep 0.5
-
-#    cp $DNS_PATH /etc/resolv.conf.bak
-#    yellow_msg "Default resolv.conf file saved. Directory: /etc/resolv.conf.bak" 
-#    sleep 0.5
-
-#    sed -i '/nameserver/d' $DNS_PATH
-
-#    echo "nameserver 8.8.8.8" >> $DNS_PATH
-#    echo "nameserver 8.8.4.4" >> $DNS_PATH
- 
-#    green_msg "DNS Fixed Temporarily."
-#    echo 
-#    sleep 0.5
-#}
-
-
 # Timezone
 set_timezone() {
     echo
@@ -577,7 +556,7 @@ nft_optimizations() {
 
     # Open default ports.
 NFTCONF="/etc/nftables.conf"
-cat >/etc/nftables.conf <<-\EOF
+    cat >/etc/nftables.conf <<-\EOF
 #!/usr/sbin/nft -f
 
 flush ruleset
@@ -623,7 +602,8 @@ table inet filter {
     }
 }
 EOF
-sed -i "s/ens3/$INTERFACE/" $NFTCONF
+
+    sed -i "s/ens3/$INTERFACE/" $NFTCONF
     sudo systemctl restart nftables
     echo 
     green_msg 'NFT is Installed (Ports TCP 2222, 80, 443 UDP 1024-65535 is opened)'
@@ -688,12 +668,12 @@ EOF
 
 # Enable Systemd DNS resolver
 systemd_resolved() {
-sudo systemctl enable systemd-resolved
-sudo systemctl start systemd-resolved
-chattr -i /etc/resolv.conf
-sudo rm /etc/resolv.conf
-sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-cat >/etc/systemd/resolved.conf <<-\EOF
+    sudo systemctl enable systemd-resolved
+    sudo systemctl start systemd-resolved
+    chattr -i /etc/resolv.conf
+    sudo rm /etc/resolv.conf
+    sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+    cat >/etc/systemd/resolved.conf <<-\EOF
 [Resolve]
 # Some examples of DNS servers which may be used for DNS= and FallbackDNS=:
 # Cloudflare: 1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
@@ -711,26 +691,27 @@ Cache=no-negative
 #ReadEtcHosts=yes
 #ResolveUnicastSingleLabel=no
 EOF
-sudo systemctl restart systemd-resolved
-systemd-resolved --status | grep 'DNS Servers' -A2
-sleep 0.5
+
+    sudo systemctl restart systemd-resolved
+    systemd-resolved --status | grep 'DNS Servers' -A2
+    sleep 0.5
 }
 
 dnsproxy() {
-# Get the latest dnsproxy version from GitHub
-VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
-echo "Latest AdguardTeam dnsproxy version is $VERSION"
+    #Get the latest dnsproxy version from GitHub
+    VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
+    echo "Latest AdguardTeam dnsproxy version is $VERSION"
 
-# Download and extract dnsproxy
-wget -O dnsproxy.tar.gz "https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
-tar -xzvf dnsproxy.tar.gz
-cd linux-amd64
+    #Download and extract dnsproxy
+    wget -O dnsproxy.tar.gz "https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
+    tar -xzvf dnsproxy.tar.gz
+    cd linux-amd64
 
-# Install dnsproxy
-sudo mv dnsproxy /usr/bin/dnsproxy
+    # Install dnsproxy
+    sudo mv dnsproxy /usr/bin/dnsproxy
 
-# Create dnsproxy systemd service file
-cat << EOF | sudo tee /etc/systemd/system/dnsproxy.service
+    # Create dnsproxy systemd service file
+    cat << EOF | sudo tee /etc/systemd/system/dnsproxy.service
 [Unit]
 Description=DNS Proxy
 After=network.target
@@ -745,49 +726,49 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOF
 
-# Reload systemd and enable dnsproxy service
-sudo systemctl daemon-reload
-sudo systemctl enable --now dnsproxy
-systemctl disable systemd-resolved --now
+    # Reload systemd and enable dnsproxy service
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now dnsproxy
+    systemctl disable systemd-resolved --now
 
-# Configure /etc/resolv.conf to use local dnsproxy
-echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
+    # Configure /etc/resolv.conf to use local dnsproxy
+    echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
 
-# Check DNS resolution and print success message
-if host google.com &> /dev/null; then
+    # Check DNS resolution and print success message
+    if host google.com &> /dev/null; then
     echo "DNS proxy is working correctly!"
-else
+    else
     echo "Error: DNS proxy setup failed."
-fi
+    fi
 }
 
-#ByeDPI
+    #ByeDPI
 ciadpi() {
-bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
+    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
 }
 
-# Synth Shell
+    # Synth Shell
 synth_shell() {
-sudo apt install bc fonts-powerline git -y
-git clone --recursive https://github.com/andresgongora/synth-shell.git
-chmod +x synth-shell/setup.sh
-~/synth-shell/setup.sh
-sleep 1 
-sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
-sudo rm ~/.config/synth-shell/synth-shell-greeter.config
-wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.config -q -O ~/.config/synth-shell/synth-shell-greeter.config
-wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.sh -q -O ~/.config/synth-shell/synth-shell-greeter.sh
-sleep 1
+    sudo apt install bc fonts-powerline git -y
+    git clone --recursive https://github.com/andresgongora/synth-shell.git
+    chmod +x synth-shell/setup.sh
+    ~/synth-shell/setup.sh
+    sleep 1 
+    sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
+    sudo rm ~/.config/synth-shell/synth-shell-greeter.config
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.config -q -O ~/.config/synth-shell/synth-shell-greeter.config
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.sh -q -O ~/.config/synth-shell/synth-shell-greeter.sh
+    sleep 1
 }
 
-#3X-UI
+    #3X-UI
 xui() {
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
+    bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
 }
 
-# Repo Debian 11
+    # Repo Debian 11
 repo_debian() {
-tee /etc/apt/sources.list<<EOF
+    tee /etc/apt/sources.list<<EOF
 deb http://mirror.yandex.ru/debian bullseye main
 deb-src http://mirror.yandex.ru/debian bullseye main
 deb http://mirror.yandex.ru/debian-security bullseye-security main
@@ -797,11 +778,11 @@ deb-src http://mirror.yandex.ru/debian bullseye-updates main
 deb http://mirror.yandex.ru/debian bullseye-backports main
 deb-src http://mirror.yandex.ru/debian bullseye-backports main
 EOF
-echo 
-sleep 0.5
+    echo 
+    sleep 0.5
 }
 
-# Show the Menu
+    # Show the Menu
 show_menu() {
     link=$(echo "http://ip-api.com/json/$public_ip")
     data=$(curl $link -s) # -s for slient output
