@@ -552,12 +552,11 @@ nft_optimizations() {
     sleep 0.5
 
     # Open default ports.
-NFTCONF="/etc/nftables.conf"
+    NFTCONF="/etc/nftables.conf"
     cat >/etc/nftables.conf <<-\EOF
 #!/usr/sbin/nft -f
 
 flush ruleset
-
 table netdev drop-bad-packets {
     chain ingress {
         tcp flags & (fin | psh | urg) == fin | psh | urg drop
