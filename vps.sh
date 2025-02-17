@@ -30,7 +30,6 @@ cyn_msg() {
 
 # Paths
 HOST_PATH="/etc/hosts"
-DNS_PATH="/etc/resolv.conf"
 
  
 # Root
@@ -216,23 +215,6 @@ ext_interface () {
 }
 INTERFACE=$(ext_interface)
 
-# Root
-check_if_running_as_root() {
-    # If you want to run as another user, please modify $EUID to be owned by this user
-    if [[ "$EUID" -ne '0' ]]; then
-      echo 
-      red_msg 'Error: You must run this script as root!'
-      echo 
-      sleep 0.5
-      exit 1
-    fi
-}
-
-
-# Check Root
-check_if_running_as_root
-sleep 0.5
-
 
 # Ask Reboot
 ask_reboot() {
@@ -279,8 +261,6 @@ complete_update() {
 }
 
 
-
-
 ## Install useful packages
 installations() {
     echo 
@@ -305,6 +285,7 @@ installations() {
     echo 
     sleep 0.5
 }
+
 
 # Enable packages at server boot
 enable_packages() {
