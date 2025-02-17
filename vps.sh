@@ -180,9 +180,6 @@ fi
 fix_etc_hosts
 sleep 0.5
 
-# Fix DNS
-#fix_dns
-#sleep 0.5
 
 # Timezone
 set_timezone
@@ -766,6 +763,11 @@ xui() {
     bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
 }
 
+    # AmneziaWG
+amnezia() {
+    wget "https://raw.githubusercontent.com/Onair-santa/amneziawg-install/main/amneziawg-install.sh" -O amneziawg-install.sh && chmod +x amneziawg-install.sh && bash amneziawg-install.sh
+}
+    
     # Repo Debian 11
 repo_debian() {
     tee /etc/apt/sources.list<<EOF
@@ -819,6 +821,7 @@ show_menu() {
     green_msg '15. - Repository Debian11'
     green_msg '16. - ByeDPI'
     green_msg '17. - X-UI'
+    green_msg '18. - AmneziaWG'
     echo 
     red_msg 'Q - Exit'
     echo 
@@ -1069,6 +1072,13 @@ main() {
             ;;
 	17)
             xui
+	    sleep 0.5
+            green_msg '========================='
+            green_msg  'Done.'
+            green_msg '========================='
+            ;;
+	18)
+            amnezia
 	    sleep 0.5
             green_msg '========================='
             green_msg  'Done.'
