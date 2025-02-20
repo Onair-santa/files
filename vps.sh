@@ -816,7 +816,6 @@ main() {
         case $choice in
         1)
 	    repo_debian
-            dnsproxy
             complete_update
             sleep 0.5
 
