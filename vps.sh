@@ -670,7 +670,7 @@ Cache=no-negative
 EOF
 
     sudo systemctl restart systemd-resolved
-    systemd-resolved --status | grep 'DNS Servers' -A2
+    systemd-resolve --status | grep 'DNS Servers' -A2
     sleep 0.5
 }
 
