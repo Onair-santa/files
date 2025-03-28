@@ -781,7 +781,7 @@ show_menu() {
     echo 
     yellow_msg '              Choose One Option: '
     echo 
-    green_msg '1.  - Update + S-Resolver + Packages + Net,SSH,Sys Limits + PubKey + NFT + Fail2ban + Synth-Shell'
+    green_msg '1.  - Update + Packages + Net,SSH,Sys Limits + PubKey + NFT + Fail2ban + Synth-Shell'
     green_msg '2.  - Update + Net, SSH, Sys Limits + NFT'
     green_msg '3.  - Update + Net, SSH, Sys Limits'
     echo 
