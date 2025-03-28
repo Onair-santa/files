@@ -815,7 +815,6 @@ main() {
         read -p 'Enter Your Choice: ' choice
         case $choice in
         1)
-            systemd_resolved
             complete_update
             sleep 0.5
 
