@@ -269,7 +269,7 @@ installations() {
     sleep 0.5
 
     # Networking packages
-    sudo apt -q -y install nftables speedtest-cli cbm
+    sudo apt -q -y install nftables speedtest-cli
 
     # System utilities
     sudo apt -q -y install curl wget 
@@ -781,7 +781,7 @@ show_menu() {
     echo 
     yellow_msg '              Choose One Option: '
     echo 
-    green_msg '1.  - Update + Packages + Net,SSH,Sys Limits + PubKey + NFT + Fail2ban + Synth-Shell'
+    green_msg '1.  - Update + Packages + Net,SSH,Sys Limits + PubKey + NFT + Synth-Shell'
     green_msg '2.  - Update + Net, SSH, Sys Limits + NFT'
     green_msg '3.  - Update + Net, SSH, Sys Limits'
     echo 
@@ -838,9 +838,6 @@ main() {
             ext_interface
             nft_optimizations
 	    install_key
-            sleep 0.5
-
-            f2b_install
             sleep 0.5
 
             synth_shell
