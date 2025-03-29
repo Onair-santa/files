@@ -278,7 +278,7 @@ installations() {
     sudo apt -q -y install jq
 
     # Miscellaneous
-    sudo apt -q -y install dialog htop btop
+    sudo apt -q -y install dialog htop
 
     echo 
     green_msg 'Useful Packages Installed Succesfully.'
@@ -538,25 +538,6 @@ nft_optimizations() {
 #!/usr/sbin/nft -f
 
 flush ruleset
-table netdev drop-bad-packets {
-    chain ingress {
-        tcp flags & (fin | psh | urg) == fin | psh | urg drop
-        tcp flags & (fin | syn | rst | psh | ack | urg) == 0x0 drop
-        tcp flags syn tcp option maxseg size 1-535 drop
-    }
-    chain ingress-ens3 {
-        type filter hook ingress device "ens3" priority -450; policy accept;
-        goto ingress
-    }
-}
-
-table inet drop-bad-ct-states {
-    chain prerouting {
-        type filter hook prerouting priority -150; policy accept;
-        ct state invalid drop
-        ct state new tcp flags & (fin | syn | rst | ack) != syn drop
-    }
-}
 
 table inet filter {
     chain input {
