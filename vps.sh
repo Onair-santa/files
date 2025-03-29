@@ -538,6 +538,25 @@ nft_optimizations() {
 #!/usr/sbin/nft -f
 
 flush ruleset
+table netdev drop-bad-packets {
+    chain ingress {
+        tcp flags & (fin | psh | urg) == fin | psh | urg drop
+        tcp flags & (fin | syn | rst | psh | ack | urg) == 0x0 drop
+        tcp flags syn tcp option maxseg size 1-535 drop
+    }
+    chain ingress-ens3 {
+        type filter hook ingress device "ens3" priority -450; policy accept;
+        goto ingress
+    }
+}
+
+table inet drop-bad-ct-states {
+    chain prerouting {
+        type filter hook prerouting priority -150; policy accept;
+        ct state invalid drop
+        ct state new tcp flags & (fin | syn | rst | ack) != syn drop
+    }
+}
 
 table inet filter {
     chain input {
@@ -567,6 +586,7 @@ EOF
     green_msg 'NFT is Installed (Ports TCP 2222, 80, 443 UDP 1024-65535 is opened)'
     echo 
     sleep 0.5
+}
 
 # Install pubkey
 install_key() {
@@ -761,7 +781,7 @@ show_menu() {
     echo 
     yellow_msg '              Choose One Option: '
     echo 
-    green_msg '1.  - Update + Packages + Net,SSH,Sys Limits + PubKey + NFT + Synth-Shell'
+    green_msg '1.  - Update + Packages + Net,SSH,Sys Limits + PubKey + NFT + Fail2ban + Synth-Shell'
     green_msg '2.  - Update + Net, SSH, Sys Limits + NFT'
     green_msg '3.  - Update + Net, SSH, Sys Limits'
     echo 
@@ -818,6 +838,9 @@ main() {
             ext_interface
             nft_optimizations
 	    install_key
+            sleep 0.5
+
+            f2b_install
             sleep 0.5
 
             synth_shell
