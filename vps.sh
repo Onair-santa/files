@@ -763,7 +763,7 @@ show_menu() {
     yellow_msg '              Choose One Option: '
     echo 
     green_msg '1.  - Update + Packages + Net,SSH,Sys Limits + PubKey + NFT + Synth-Shell'
-    green_msg '2.  - Update + Net, SSH, Sys Limits + NFT'
+    green_msg '2.  - Repository Debian11'
     green_msg '3.  - Update + Net, SSH, Sys Limits'
     echo 
     cyn_msg '4.  - Update & Clean the OS'
@@ -779,7 +779,7 @@ show_menu() {
     yellow_msg '13. - Fail2ban'
     echo
     green_msg '14. - DNSproxy DNS Resolver'
-    green_msg '15. - Repository Debian11'
+    green_msg '15. - DNS Systemd-resolved'
     green_msg '16. - ByeDPI'
     green_msg '17. - X-UI'
     green_msg '18. - AmneziaWG'
@@ -831,33 +831,13 @@ main() {
             ask_reboot
             ;;
         2)
-            complete_update
+            repo_debian
             sleep 0.5
-
-            sysctl_optimizations
-            sleep 0.5
-
-            remove_old_ssh_conf
-            sleep 0.5
-
-            update_sshd_conf
-            sleep 0.5
-
-            limits_optimizations
-            sleep 0.5
-
-            find_ssh_port
-            ext_interface
-            nft_optimizations
-            sleep 0.5
-
             echo 
             green_msg '========================='
             green_msg  'Done.'
             green_msg '========================='
-
-            ask_reboot
-            ;;
+            ;;            
         3)
             complete_update
             sleep 0.5
@@ -884,7 +864,6 @@ main() {
         4)
             complete_update
             sleep 0.5
-
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -896,7 +875,6 @@ main() {
         5)
             complete_update
             sleep 0.5
-
             installations
             enable_packages
             sleep 0.5
@@ -936,13 +914,12 @@ main() {
             green_msg '========================='
             green_msg  'Done.'
             green_msg '========================='
-
+	    
             ask_reboot
             ;;
         8)
             sysctl_optimizations
             sleep 0.5
-
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -955,7 +932,6 @@ main() {
 
             update_sshd_conf
             sleep 0.5
-
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -965,7 +941,6 @@ main() {
         10)
             limits_optimizations
             sleep 0.5
-
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -978,7 +953,6 @@ main() {
             ext_interface
             nft_optimizations
             sleep 0.5
-
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -986,8 +960,7 @@ main() {
             ;;
         12)
             synth_shell
-            sleep 1
-	    
+            sleep 1	    
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -995,8 +968,7 @@ main() {
             ;;
         13)
             f2b_install
-            sleep 0.5
-            
+            sleep 0.5    
             echo 
             green_msg '========================='
             green_msg  'Done.'
@@ -1004,17 +976,16 @@ main() {
             ;;
 	14)
             dnsproxy
-            sleep 0.5
-            
+            sleep 0.5            
             echo 
             green_msg '========================='
             green_msg  'Done.'
             green_msg '========================='
             ;;
 	15)
-            repo_debian
-            sleep 0.5
-            echo 
+            systemd_resolved
+	    sleep 0.5
+	    echo 
             green_msg '========================='
             green_msg  'Done.'
             green_msg '========================='
@@ -1043,7 +1014,6 @@ main() {
         q)
             exit 0
             ;;
-
         *)
             red_msg 'Wrong input!'
             ;;
