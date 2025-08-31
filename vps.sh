@@ -548,9 +548,8 @@ table inet filter {
         iifname "ens3" tcp dport 80 accept
         iifname "ens3" tcp dport 443 accept
         iifname "ens3" udp dport 1024-65535 accept
-	iifname "ens3" tcp dport 55555 accept
+	    iifname "ens3" tcp dport 55555 accept
         iifname "ens3" tcp dport 40000 accept
-        reject
     }
     chain forward {
 	type filter hook forward priority filter; policy accept;
@@ -741,15 +740,15 @@ amnezia() {
     
     # Repo Debian 11
 repo_debian() {
-    tee /etc/apt/sources.list<<EOF
-deb http://mirror.yandex.ru/debian bullseye main
-deb-src http://mirror.yandex.ru/debian bullseye main
-deb http://mirror.yandex.ru/debian-security bullseye-security main
-deb-src http://mirror.yandex.ru/debian-security bullseye-security main
-deb http://mirror.yandex.ru/debian bullseye-updates main
-deb-src http://mirror.yandex.ru/debian bullseye-updates main
-deb http://mirror.yandex.ru/debian bullseye-backports main
-deb-src http://mirror.yandex.ru/debian bullseye-backports main
+   tee /etc/apt/sources.list<<EOF
+deb http://deb.debian.org/debian bullseye main
+deb-src http://deb.debian.org/debian bullseye main
+deb http://security.debian.org/debian-security bullseye-security main
+deb-src http://security.debian.org/debian-security bullseye-security main
+deb http://deb.debian.org/debian bullseye-updates main
+deb-src http://deb.debian.org/debian bullseye-updates main
+deb http://archive.debian.org/debian bullseye-backports main
+deb-src http://archive.debian.org/debian bullseye-backports main
 EOF
     echo 
     sleep 0.5
