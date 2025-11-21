@@ -21,7 +21,7 @@ Requires=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/dnsproxy -l 127.0.0.1 -p 53 -u https://dns.google/dns-query -b 8.8.8.8:53 -f 1.1.1.1:53
+ExecStart=/usr/bin/dnsproxy -l 127.0.0.1 -p 53 -u https://dns.cloudflare.com/dns-query -b 1.1.1.1:53 -f 8.8.8.8:53 --cache
 Restart=on-failure
 
 [Install]
