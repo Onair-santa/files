@@ -733,7 +733,7 @@ xui() {
 
     # AmneziaWG
 amnezia() {
-    wget "https://raw.githubusercontent.com/Onair-santa/amneziawg-install/main/amneziawg-install.sh" -O amneziawg-install.sh && chmod +x amneziawg-install.sh && bash amneziawg-install.sh
+    wget https://raw.githubusercontent.com/romikb/amneziawg-install/main/amneziawg-install.sh -O amneziawg-install.sh && chmod +x amneziawg-install.sh && bash amneziawg-install.sh
 }
     
     # Repo Debian 11
