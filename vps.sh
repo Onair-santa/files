@@ -334,7 +334,8 @@ sysctl_optimizations() {
 
     # Replace the new sysctl.conf file.
     wget "https://raw.githubusercontent.com/Onair-santa/files/main/sysctl.conf" -q -O $SYS_PATH
-
+    sed -i '/net.ipv6.conf.eth0.disable_ipv6/d' $SYS_PATH
+    echo "net.ipv6.conf."$INTERFACE".disable_ipv6 = 1" | tee -a $SYS_PATH
     sysctl -p
     echo 
 
