@@ -569,10 +569,10 @@ EOF
 
 # Install pubkey
 install_key() {
-    wget https://raw.githubusercontent.com/Onair-santa/files/main/id_rsa.pub
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/id_ed25519.pub
     mkdir /root/.ssh
     touch /root/.ssh/authorized_keys
-    cat ~/id_rsa.pub >> ~/.ssh/authorized_keys
+    cat ~/id_ed25519.pub >> ~/.ssh/authorized_keys
 }
 
 # Install Fail2ban
