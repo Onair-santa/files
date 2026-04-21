@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Get the latest dnsproxy version from GitHub
-VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
+VERSION=$(curl -s https://ghfast.top/https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
 echo "Latest AdguardTeam dnsproxy version is $VERSION"
 
 # Download and extract dnsproxy
-wget -O dnsproxy.tar.gz "https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
+wget -O dnsproxy.tar.gz "https://ghfast.top/https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
 tar -xzvf dnsproxy.tar.gz
 cd linux-amd64
 
@@ -13,7 +13,7 @@ cd linux-amd64
 sudo mv dnsproxy /usr/bin/dnsproxy
 
 # Create dnsproxy systemd service file
-cat << EOF | sudo tee /etc/systemd/system/dnsproxy.service
+cat << 'EOF' | sudo tee /etc/systemd/system/dnsproxy.service
 [Unit]
 Description=DNS Proxy
 After=network.target
