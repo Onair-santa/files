@@ -333,7 +333,7 @@ sysctl_optimizations() {
     sleep 0.5
 
     # Replace the new sysctl.conf file.
-    wget "https://raw.githubusercontent.com/Onair-santa/files/main/sysctl.conf" -q -O $SYS_PATH
+    wget "https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/sysctl.conf" -q -O $SYS_PATH
     sed -i '/net.ipv6.conf.eth0.disable_ipv6/d' $SYS_PATH
     echo "net.ipv6.conf."$INTERFACE".disable_ipv6 = 1" | tee -a $SYS_PATH
     sysctl -p
@@ -533,7 +533,7 @@ nft_optimizations() {
 
     # Open default ports.
     NFTCONF="/etc/nftables.conf"
-    cat >/etc/nftables.conf <<-\EOF
+    cat >/etc/nftables.conf <<-'EOF'
 #!/usr/sbin/nft -f
 
 flush ruleset
@@ -551,10 +551,10 @@ table inet filter {
         iifname "ens3" tcp dport 40000 accept
     }
     chain forward {
-	type filter hook forward priority filter; policy accept;
+	    type filter hook forward priority filter; policy accept;
     }
     chain output {
-	type filter hook output priority filter; policy accept;
+	    type filter hook output priority filter; policy accept;
     }
 }
 EOF
@@ -569,7 +569,7 @@ EOF
 
 # Install pubkey
 install_key() {
-    wget https://raw.githubusercontent.com/Onair-santa/files/main/id_ed25519.pub
+    wget https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/id_ed25519.pub
     mkdir /root/.ssh
     touch /root/.ssh/authorized_keys
     cat ~/id_ed25519.pub >> ~/.ssh/authorized_keys
@@ -582,10 +582,10 @@ f2b_install() {
     echo
     sleep 0.5
 
-    wget https://github.com/fail2ban/fail2ban/releases/download/1.0.2/fail2ban_1.0.2-1.upstream1_all.deb
+    wget https://ghfast.top/https://github.com/fail2ban/fail2ban/releases/download/1.0.2/fail2ban_1.0.2-1.upstream1_all.deb
     sudo dpkg -i fail2ban_1.0.2-1.upstream1_all.deb
     sleep 1
-    cat >/etc/fail2ban/jail.local <<-\EOF
+    cat >/etc/fail2ban/jail.local <<-'EOF'
 [DEFAULT]
 bantime.increment = true
 bantime.rndtime = 10m
@@ -629,16 +629,16 @@ systemd_resolved() {
     chattr -i /etc/resolv.conf
     sudo rm /etc/resolv.conf
     sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-    cat >/etc/systemd/resolved.conf <<-\EOF
+    cat >/etc/systemd/resolved.conf <<-'EOF'
 [Resolve]
 # Some examples of DNS servers which may be used for DNS= and FallbackDNS=:
 # Cloudflare: 1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
 # Google:     8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844
-DNS=8.8.8.8 1.1.1.1
-FallbackDNS=8.8.4.4 1.0.0.1
+DNS=1.1.1.1
+FallbackDNS=1.0.0.1
 #Domains=
 #DNSSEC=no
-DNSOverTLS=yes
+#DNSOverTLS=yes
 #MulticastDNS=yes
 #LLMNR=yes
 Cache=no-negative
@@ -655,11 +655,11 @@ EOF
 
 dnsproxy() {
     #Get the latest dnsproxy version from GitHub
-    VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
+    VERSION=$(curl -s https://ghfast.top/https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
     echo "Latest AdguardTeam dnsproxy version is $VERSION"
 
     #Download and extract dnsproxy
-    wget -O dnsproxy.tar.gz "https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
+    wget -O dnsproxy.tar.gz "https://ghfast.top/https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
     tar -xzvf dnsproxy.tar.gz
     cd linux-amd64
 
@@ -667,7 +667,7 @@ dnsproxy() {
     sudo mv dnsproxy /usr/bin/dnsproxy
 
     # Create dnsproxy systemd service file
-    cat << EOF | sudo tee /etc/systemd/system/dnsproxy.service
+    cat << 'EOF' | sudo tee /etc/systemd/system/dnsproxy.service
 [Unit]
 Description=DNS Proxy
 After=network.target
@@ -700,26 +700,26 @@ EOF
 
     #ByeDPI
 ciadpi() {
-    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
+    bash <(wget -qO- https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
 }
 
     # Synth Shell
 synth_shell() {
     sudo apt install bc fonts-powerline git -y
-    git clone --recursive https://github.com/andresgongora/synth-shell.git
+    git clone --recursive https://ghfast.top/https://github.com/andresgongora/synth-shell.git
     chmod +x synth-shell/setup.sh
     ~/synth-shell/setup.sh
     sleep 1 
     sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
     sudo rm ~/.config/synth-shell/synth-shell-greeter.config
-    wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.config -q -O ~/.config/synth-shell/synth-shell-greeter.config
-    wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.sh -q -O ~/.config/synth-shell/synth-shell-greeter.sh
+    wget https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.config -q -O ~/.config/synth-shell/synth-shell-greeter.config
+    wget https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.sh -q -O ~/.config/synth-shell/synth-shell-greeter.sh
     sleep 1
 }
 
     #3X-UI
 xui() {
-    wget https://github.com/Onair-santa/3X-UI-Debian11/releases/download/2.4.1/x-ui-linux-amd64.tar.gz
+    wget https://ghfast.top/https://github.com/Onair-santa/3X-UI-Debian11/releases/download/2.4.1/x-ui-linux-amd64.tar.gz
     cd /root/
     rm -rf x-ui/ /usr/local/x-ui/ /usr/bin/x-ui
     tar zxvf x-ui-linux-amd64.tar.gz
@@ -734,12 +734,12 @@ xui() {
 
     # AmneziaWG
 amnezia() {
-    wget https://raw.githubusercontent.com/romikb/amneziawg-install/main/amneziawg-install.sh -O amneziawg-install.sh && chmod +x amneziawg-install.sh && bash amneziawg-install.sh
+    wget https://ghfast.top/https://raw.githubusercontent.com/romikb/amneziawg-install/main/amneziawg-install.sh -O amneziawg-install.sh && chmod +x amneziawg-install.sh && bash amneziawg-install.sh
 }
     
     # Repo Debian 11
 repo_debian() {
-   tee /etc/apt/sources.list<<EOF
+   tee /etc/apt/sources.list<< 'EOF'
 deb http://deb.debian.org/debian bullseye main
 deb-src http://deb.debian.org/debian bullseye main
 deb http://security.debian.org/debian-security bullseye-security main
