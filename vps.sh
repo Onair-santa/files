@@ -333,7 +333,7 @@ sysctl_optimizations() {
     sleep 0.5
 
     # Replace the new sysctl.conf file.
-    wget "https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/sysctl.conf" -q -O $SYS_PATH
+    wget "https://raw.githubusercontent.com/Onair-santa/files/main/sysctl.conf" -q -O $SYS_PATH
     sed -i '/net.ipv6.conf.eth0.disable_ipv6/d' $SYS_PATH
     echo "net.ipv6.conf."$INTERFACE".disable_ipv6 = 1" | tee -a $SYS_PATH
     sysctl -p
@@ -569,7 +569,7 @@ EOF
 
 # Install pubkey
 install_key() {
-    wget https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/id_ed25519.pub
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/id_ed25519.pub
     mkdir /root/.ssh
     touch /root/.ssh/authorized_keys
     cat ~/id_ed25519.pub >> ~/.ssh/authorized_keys
@@ -582,7 +582,7 @@ f2b_install() {
     echo
     sleep 0.5
 
-    wget https://ghfast.top/https://github.com/fail2ban/fail2ban/releases/download/1.0.2/fail2ban_1.0.2-1.upstream1_all.deb
+    wget https://github.com/fail2ban/fail2ban/releases/download/1.0.2/fail2ban_1.0.2-1.upstream1_all.deb
     sudo dpkg -i fail2ban_1.0.2-1.upstream1_all.deb
     sleep 1
     cat >/etc/fail2ban/jail.local <<-'EOF'
@@ -655,11 +655,11 @@ EOF
 
 dnsproxy() {
     #Get the latest dnsproxy version from GitHub
-    VERSION=$(curl -s https://ghfast.top/https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
+    VERSION=$(curl -s https://api.github.com/repos/AdguardTeam/dnsproxy/releases/latest | grep tag_name | cut -d '"' -f 4)
     echo "Latest AdguardTeam dnsproxy version is $VERSION"
 
     #Download and extract dnsproxy
-    wget -O dnsproxy.tar.gz "https://ghfast.top/https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
+    wget -O dnsproxy.tar.gz "https://github.com/AdguardTeam/dnsproxy/releases/download/${VERSION}/dnsproxy-linux-amd64-${VERSION}.tar.gz"
     tar -xzvf dnsproxy.tar.gz
     cd linux-amd64
 
@@ -700,26 +700,26 @@ EOF
 
     #ByeDPI
 ciadpi() {
-    bash <(wget -qO- https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
+    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
 }
 
     # Synth Shell
 synth_shell() {
     sudo apt install bc fonts-powerline git -y
-    git clone --recursive https://ghfast.top/https://github.com/andresgongora/synth-shell.git
+    git clone --recursive https://github.com/andresgongora/synth-shell.git
     chmod +x synth-shell/setup.sh
     ~/synth-shell/setup.sh
     sleep 1 
     sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
     sudo rm ~/.config/synth-shell/synth-shell-greeter.config
-    wget https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.config -q -O ~/.config/synth-shell/synth-shell-greeter.config
-    wget https://ghfast.top/https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.sh -q -O ~/.config/synth-shell/synth-shell-greeter.sh
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.config -q -O ~/.config/synth-shell/synth-shell-greeter.config
+    wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.sh -q -O ~/.config/synth-shell/synth-shell-greeter.sh
     sleep 1
 }
 
     #3X-UI
 xui() {
-    wget https://ghfast.top/https://github.com/Onair-santa/3X-UI-Debian11/releases/download/2.4.1/x-ui-linux-amd64.tar.gz
+    wget https://github.com/Onair-santa/3X-UI-Debian11/releases/download/2.4.1/x-ui-linux-amd64.tar.gz
     cd /root/
     rm -rf x-ui/ /usr/local/x-ui/ /usr/bin/x-ui
     tar zxvf x-ui-linux-amd64.tar.gz
@@ -734,7 +734,7 @@ xui() {
 
     # AmneziaWG
 amnezia() {
-    wget https://ghfast.top/https://raw.githubusercontent.com/romikb/amneziawg-install/main/amneziawg-install.sh -O amneziawg-install.sh && chmod +x amneziawg-install.sh && bash amneziawg-install.sh
+    wget https://raw.githubusercontent.com/romikb/amneziawg-install/main/amneziawg-install.sh -O amneziawg-install.sh && chmod +x amneziawg-install.sh && bash amneziawg-install.sh
 }
     
     # Repo Debian 11
