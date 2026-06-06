@@ -580,12 +580,8 @@ f2b_install() {
     echo
     yellow_msg 'Installing Fail2ban...'
     echo
-    sleep 0.5
-
-    wget https://github.com/fail2ban/fail2ban/releases/download/1.0.2/fail2ban_1.0.2-1.upstream1_all.deb
-    sudo dpkg -i fail2ban_1.0.2-1.upstream1_all.deb
-    sleep 1
-    cat >/etc/fail2ban/jail.local <<-'EOF'
+    sudo apt update -y && apt install fail2ban -y
+    cat >/etc/fail2ban/jail.local <<EOF
 [DEFAULT]
 bantime.increment = true
 bantime.rndtime = 10m
@@ -612,7 +608,7 @@ bantime = 1w
 findtime = 1d
 EOF
     
-    sudo systemctl enable fail2ban
+    sudo systemctl enable --now fail2ban
     fail2ban-client reload
     sleep 1
     fail2ban-client status
