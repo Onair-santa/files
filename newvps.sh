@@ -39,7 +39,7 @@ set_steps() {
     echo ""
 }
 
-# The Visual Progress Bar Runner
+# The Visual Progress Bar Runner (For NON-interactive tasks)
 run_task() {
     local task_name="$1"
     local func_name="$2"
@@ -53,19 +53,36 @@ run_task() {
     local bar=$(printf "%${filled}s" | tr ' ' '=')
     local empty_bar=$(printf "%${empty}s" | tr ' ' '.')
     
-    # Draw progress line ( \033[K clears the rest of the line )
+    # Draw progress line
     printf "\r\033[K${COLOR_INFO}[%3d%%] [%s>%s] %s${COLOR_RESET}" "$percent" "$bar" "$empty_bar" "$task_name"
     
-    # Execute the actual function silently. < /dev/null prevents hanging on user input!
+    # Execute silently
     $func_name >> "$LOG_FILE" 2>&1 < /dev/null
     local exit_code=$?
     
     if [ $exit_code -ne 0 ]; then
         printf "\r\033[K${COLOR_ERROR}[FAIL] %s (Check log: %s)${COLOR_RESET}\n" "$task_name" "$LOG_FILE"
     elif [ "$CURRENT_STEP" -eq "$TOTAL_STEPS" ]; then
-        # If it is the last step and successful, print a newline and DONE!!!
         printf "\n"
         echo -e "${COLOR_SUCCESS}  Done!!!${COLOR_RESET}"
+    fi
+}
+
+# Runner for INTERACTIVE tasks (Shows output, allows user input)
+run_interactive_task() {
+    local task_name="$1"
+    local func_name="$2"
+    
+    echo -e "${COLOR_INFO}\n--- Starting $task_name (Interactive Setup) ---${COLOR_RESET}\n"
+    
+    # Run completely open to the terminal
+    $func_name
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        echo -e "${COLOR_SUCCESS}\n  Done!!!${COLOR_RESET}"
+    else
+        echo -e "${COLOR_ERROR}\n[FAIL] $task_name installation encountered an error.${COLOR_RESET}"
     fi
 }
 
@@ -89,16 +106,15 @@ detect_os() {
     fi
 }
 
-# Global Interface detection
 detect_interface() {
     INTERFACE=$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1)
     if [ -z "$INTERFACE" ]; then
-        INTERFACE="eth0" # Fallback
+        INTERFACE="eth0"
     fi
 }
 
 
-# --- Core Functions (Silent logic, no echo inside) ---
+# --- Core Functions ---
 
 install_dependencies() {
     apt-get update $APT_OPTS
@@ -389,7 +405,7 @@ EOF
 }
 
 ciadpi() {
-    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/ciadpi.sh)
+    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
 }
 
 tun2socks_install() {
@@ -605,11 +621,11 @@ main() {
         13) set_steps 1; run_task "Installing Fail2Ban" "f2b_install" ;;
         14) set_steps 1; run_task "Installing DNS Proxy" "dnsproxy" ;;
         15) set_steps 1; run_task "Configuring Systemd Resolved" "systemd_resolved" ;;
-        16) set_steps 1; run_task "Installing ByeDPI" "ciadpi" ;;
+        16) run_interactive_task "ByeDPI" "ciadpi" ;;
         17) set_steps 1; run_task "Installing Tun2socks" "tun2socks_install" ;;
         18) set_steps 1; run_task "Special NFTables config" "nft_tun2socks_optimizations" ;;
         19) set_steps 1; run_task "Installing X-UI" "xui" ;;
-        20) set_steps 1; run_task "Installing AmneziaWG" "amnezia" ;;
+        20) run_interactive_task "AmneziaWG" "amnezia" ;;
         q|Q) echo ""; msg_info "Goodbye!"; exit 0 ;;
         *) msg_error "Wrong input! Please try again." ;;
         esac
