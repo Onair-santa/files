@@ -389,7 +389,7 @@ EOF
 }
 
 ciadpi() {
-    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
+    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/ciadpi.sh)
 }
 
 tun2socks_install() {
