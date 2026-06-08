@@ -2,7 +2,7 @@
 
 # --- Configuration & Styling ---
 LOG_FILE="/var/log/vps_setup.log"
-> "$LOG_FILE" # Очищаем лог при старте
+> "$LOG_FILE" # Clear log on startup
 
 # Colors
 COLOR_RESET="\033[0m"
@@ -22,6 +22,10 @@ SWAP_SIZE="1G"
 # Global Progress State
 TOTAL_STEPS=1
 CURRENT_STEP=0
+
+# APT Safe Options (prevents hanging on configuration prompts)
+export DEBIAN_FRONTEND=noninteractive
+APT_OPTS="-y -qq -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
 
 # --- UI Functions ---
 msg_info()    { echo -e "${COLOR_INFO}  $1${COLOR_RESET}"; }
@@ -45,18 +49,19 @@ run_task() {
     local filled=$(( percent / 5 ))
     local empty=$(( 20 - filled ))
     
-    local bar=$(printf "%${filled}s" | tr ' ' '█')
-    local empty_bar=$(printf "%${empty}s" | tr ' ' '░')
+    # Safe ASCII progress bar chars
+    local bar=$(printf "%${filled}s" | tr ' ' '=')
+    local empty_bar=$(printf "%${empty}s" | tr ' ' '.')
     
     # Draw progress line ( \033[K clears the rest of the line )
-    printf "\r\033[K${COLOR_INFO}[%3d%%] %s%s %s${COLOR_RESET}" "$percent" "$bar" "$empty_bar" "$task_name"
+    printf "\r\033[K${COLOR_INFO}[%3d%%] [%s>%s] %s${COLOR_RESET}" "$percent" "$bar" "$empty_bar" "$task_name"
     
-    # Execute the actual function silently
-    $func_name >> "$LOG_FILE" 2>&1
+    # Execute the actual function silently. < /dev/null prevents hanging on user input!
+    $func_name >> "$LOG_FILE" 2>&1 < /dev/null
     local exit_code=$?
     
     if [ $exit_code -ne 0 ]; then
-        printf "\r\033[K${COLOR_ERROR}[FAIL] %s (Смотри ошибку в %s)${COLOR_RESET}\n" "$task_name" "$LOG_FILE"
+        printf "\r\033[K${COLOR_ERROR}[FAIL] %s (Check log: %s)${COLOR_RESET}\n" "$task_name" "$LOG_FILE"
     fi
     
     # If it's the last step, print a new line
@@ -97,9 +102,8 @@ detect_interface() {
 # --- Core Functions (Silent logic, no echo inside) ---
 
 install_dependencies() {
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update -yqq
-    apt-get install -yqq wget curl sudo jq iproute2 unzip
+    apt-get update $APT_OPTS
+    apt-get install $APT_OPTS wget curl sudo jq iproute2 unzip
 }
 
 fix_etc_hosts() { 
@@ -122,16 +126,14 @@ set_timezone() {
 }
 
 complete_update() {
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get -yqq update
-    apt-get -yqq upgrade
-    apt-get -yqq autoremove
-    apt-get -yqq clean
+    apt-get update $APT_OPTS
+    apt-get upgrade $APT_OPTS
+    apt-get autoremove $APT_OPTS
+    apt-get clean $APT_OPTS
 }
 
 installations() {
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get -yqq install nftables speedtest-cli curl wget jq dialog htop unzip
+    apt-get install $APT_OPTS nftables speedtest-cli curl wget jq dialog htop unzip
 }
 
 enable_packages() {
@@ -212,9 +214,9 @@ limits_optimizations() {
 }
 
 nft_optimizations() {
-    apt-get -yqq purge firewalld || true
-    apt-get update -yqq
-    apt-get install -yqq nftables
+    apt-get purge firewalld $APT_OPTS 2>/dev/null || true
+    apt-get update $APT_OPTS
+    apt-get install nftables $APT_OPTS
     
     systemctl start nftables
     systemctl enable nftables
@@ -251,9 +253,9 @@ EOF
 }
 
 nft_tun2socks_optimizations() {
-    apt-get -yqq purge firewalld 2>/dev/null || true
-    apt-get update -yqq
-    apt-get install -yqq nftables
+    apt-get purge firewalld $APT_OPTS 2>/dev/null || true
+    apt-get update $APT_OPTS
+    apt-get install nftables $APT_OPTS
     
     systemctl start nftables
     systemctl enable nftables
@@ -310,7 +312,7 @@ install_key() {
 }
 
 f2b_install() {
-    apt-get update -yqq && apt-get install fail2ban -yqq
+    apt-get update $APT_OPTS && apt-get install fail2ban $APT_OPTS
     cat > /etc/fail2ban/jail.local <<EOF
 [DEFAULT]
 bantime.increment = true
@@ -392,8 +394,7 @@ ciadpi() {
 }
 
 tun2socks_install() {
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update -yqq && apt-get install -yqq unzip wget
+    apt-get update $APT_OPTS && apt-get install $APT_OPTS unzip wget
     wget -q https://github.com/xjasonlyu/tun2socks/releases/download/v2.5.2/tun2socks-linux-amd64.zip -O /tmp/tun2socks.zip
     unzip -o /tmp/tun2socks.zip -d /tmp/
     mv /tmp/tun2socks-linux-amd64 /usr/local/bin/tun2socks
@@ -404,7 +405,7 @@ tun2socks_install() {
         echo "200 socks_table" >> /etc/iproute2/rt_tables
     fi
 
-    cat << 'EOF' > /etc/systemd/system/tun2socks.service
+    cat <<'EOF' > /etc/systemd/system/tun2socks.service
 [Unit]
 Description=tun2socks Proxy for VPNhood (Local ciadpi)
 After=network-online.target
@@ -436,7 +437,7 @@ EOF
 }
 
 synth_shell() {
-    apt-get update -yqq && apt-get install bc fonts-powerline git -yqq
+    apt-get update $APT_OPTS && apt-get install bc fonts-powerline git $APT_OPTS
     rm -rf /tmp/synth-shell
     git clone --recursive https://github.com/andresgongora/synth-shell.git /tmp/synth-shell
     chmod +x /tmp/synth-shell/setup.sh
@@ -538,9 +539,9 @@ show_menu() {
     echo ""
     msg_success '14. DNS Proxy Resolver Setup'
     msg_success '15. Systemd Resolved DNS Setup'
-    msg_success '16. ByeDPI'
-    msg_success '17. Установка Tun2socks'
-    msg_success '18. Настройка NFTables для tun2socks+ciadpi+VPNHood'
+    msg_success '16. ByeDPI Installation'
+    msg_success '17. Tun2socks Installation'
+    msg_success '18. NFTables for tun2socks+ciadpi+VPNHood'
     msg_success '19. X-UI (V2Ray/Xray)'
     msg_success '20. AmneziaWG Installation'
     echo ""
@@ -557,9 +558,9 @@ main() {
     detect_interface 
     
     set_steps 3
-    run_task "Установка базовых утилит" "install_dependencies"
-    run_task "Корректировка /etc/hosts" "fix_etc_hosts"
-    run_task "Синхронизация времени" "set_timezone"
+    run_task "Installing base utilities" "install_dependencies"
+    run_task "Fixing /etc/hosts" "fix_etc_hosts"
+    run_task "Setting timezone" "set_timezone"
 
     while true; do
         show_menu
@@ -567,50 +568,50 @@ main() {
         case $choice in
         1) 
             set_steps 11
-            run_task "Обновление и очистка системы" "complete_update"
-            run_task "Установка полезных пакетов" "installations"
-            run_task "Активация сервисов" "enable_packages"
-            run_task "Оптимизация сети (Sysctl)" "sysctl_optimizations"
-            run_task "Сброс старого конфига SSH" "remove_old_ssh_conf"
-            run_task "Оптимизация SSH (Port 2222)" "update_sshd_conf"
-            run_task "Снятие системных лимитов" "limits_optimizations"
-            run_task "Поиск активного SSH порта" "find_ssh_port"
-            run_task "Настройка Firewall (NFTables)" "nft_optimizations"
-            run_task "Установка SSH ключа" "install_key"
-            run_task "Установка Synth-Shell" "synth_shell"
+            run_task "Updating & cleaning system" "complete_update"
+            run_task "Installing useful packages" "installations"
+            run_task "Enabling services" "enable_packages"
+            run_task "Optimizing network (Sysctl)" "sysctl_optimizations"
+            run_task "Resetting old SSH config" "remove_old_ssh_conf"
+            run_task "Optimizing SSH (Port 2222)" "update_sshd_conf"
+            run_task "Optimizing system limits" "limits_optimizations"
+            run_task "Finding active SSH port" "find_ssh_port"
+            run_task "Configuring Firewall (NFTables)" "nft_optimizations"
+            run_task "Installing SSH key" "install_key"
+            run_task "Installing Synth-Shell" "synth_shell"
             msg_success "\n✅ Full Setup Complete!"
             ask_reboot
             ;;
-        2) set_steps 1; run_task "Смена репозиториев Debian 11" "repo_debian" ;;
+        2) set_steps 1; run_task "Changing Debian 11 repositories" "repo_debian" ;;
         3) 
             set_steps 4
-            run_task "Обновление системы" "complete_update"
-            run_task "Оптимизация сети" "sysctl_optimizations"
-            run_task "Настройка SSH" "update_sshd_conf"
-            run_task "Настройка лимитов" "limits_optimizations"
+            run_task "Updating system" "complete_update"
+            run_task "Optimizing network" "sysctl_optimizations"
+            run_task "Configuring SSH" "update_sshd_conf"
+            run_task "Optimizing limits" "limits_optimizations"
             ;;
-        4) set_steps 1; run_task "Очистка системы" "complete_update" ;;
-        5) set_steps 1; run_task "Установка пакетов" "installations" ;;
-        6) set_steps 1; run_task "Настройка SWAP" "swap_maker" ;;
+        4) set_steps 1; run_task "Cleaning system" "complete_update" ;;
+        5) set_steps 1; run_task "Installing packages" "installations" ;;
+        6) set_steps 1; run_task "Configuring SWAP" "swap_maker" ;;
         7) 
             set_steps 3
-            run_task "Настройка Sysctl" "sysctl_optimizations"
-            run_task "Настройка SSH" "update_sshd_conf"
-            run_task "Настройка лимитов" "limits_optimizations"
+            run_task "Configuring Sysctl" "sysctl_optimizations"
+            run_task "Configuring SSH" "update_sshd_conf"
+            run_task "Optimizing limits" "limits_optimizations"
             ;;
-        8) set_steps 1; run_task "Настройка Sysctl" "sysctl_optimizations" ;;
-        9) set_steps 2; run_task "Очистка старого SSH" "remove_old_ssh_conf"; run_task "Новые настройки SSH" "update_sshd_conf" ;;
-        10) set_steps 1; run_task "Настройка лимитов" "limits_optimizations" ;;
-        11) set_steps 1; run_task "Настройка Firewall" "nft_optimizations" ;;
-        12) set_steps 1; run_task "Установка Synth-Shell" "synth_shell" ;;
-        13) set_steps 1; run_task "Установка Fail2Ban" "f2b_install" ;;
-        14) set_steps 1; run_task "Установка DNS Proxy" "dnsproxy" ;;
-        15) set_steps 1; run_task "Настройка Systemd Resolved" "systemd_resolved" ;;
-        16) set_steps 1; run_task "Установка ByeDPI" "ciadpi" ;;
-        17) set_steps 1; run_task "Установка Tun2socks" "tun2socks_install" ;;
-        18) set_steps 1; run_task "Спец. настройка NFTables" "nft_tun2socks_optimizations" ;;
-        19) set_steps 1; run_task "Установка X-UI" "xui" ;;
-        20) set_steps 1; run_task "Установка AmneziaWG" "amnezia" ;;
+        8) set_steps 1; run_task "Configuring Sysctl" "sysctl_optimizations" ;;
+        9) set_steps 2; run_task "Cleaning old SSH config" "remove_old_ssh_conf"; run_task "Applying new SSH config" "update_sshd_conf" ;;
+        10) set_steps 1; run_task "Optimizing limits" "limits_optimizations" ;;
+        11) set_steps 1; run_task "Configuring Firewall" "nft_optimizations" ;;
+        12) set_steps 1; run_task "Installing Synth-Shell" "synth_shell" ;;
+        13) set_steps 1; run_task "Installing Fail2Ban" "f2b_install" ;;
+        14) set_steps 1; run_task "Installing DNS Proxy" "dnsproxy" ;;
+        15) set_steps 1; run_task "Configuring Systemd Resolved" "systemd_resolved" ;;
+        16) set_steps 1; run_task "Installing ByeDPI" "ciadpi" ;;
+        17) set_steps 1; run_task "Installing Tun2socks" "tun2socks_install" ;;
+        18) set_steps 1; run_task "Special NFTables config" "nft_tun2socks_optimizations" ;;
+        19) set_steps 1; run_task "Installing X-UI" "xui" ;;
+        20) set_steps 1; run_task "Installing AmneziaWG" "amnezia" ;;
         q|Q) echo ""; msg_info "Goodbye!"; exit 0 ;;
         *) msg_error "Wrong input! Please try again." ;;
         esac
