@@ -62,11 +62,10 @@ run_task() {
     
     if [ $exit_code -ne 0 ]; then
         printf "\r\033[K${COLOR_ERROR}[FAIL] %s (Check log: %s)${COLOR_RESET}\n" "$task_name" "$LOG_FILE"
-    fi
-    
-    # If it's the last step, print a new line
-    if [ "$CURRENT_STEP" -eq "$TOTAL_STEPS" ]; then
+    elif [ "$CURRENT_STEP" -eq "$TOTAL_STEPS" ]; then
+        # If it is the last step and successful, print a newline and DONE!!!
         printf "\n"
+        echo -e "${COLOR_SUCCESS}  Done!!!${COLOR_RESET}"
     fi
 }
 
@@ -390,7 +389,7 @@ EOF
 }
 
 ciadpi() {
-    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/ciadpi.sh)
+    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
 }
 
 tun2socks_install() {
@@ -579,7 +578,6 @@ main() {
             run_task "Configuring Firewall (NFTables)" "nft_optimizations"
             run_task "Installing SSH key" "install_key"
             run_task "Installing Synth-Shell" "synth_shell"
-            msg_success "\n✅ Full Setup Complete!"
             ask_reboot
             ;;
         2) set_steps 1; run_task "Changing Debian 11 repositories" "repo_debian" ;;
