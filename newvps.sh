@@ -118,7 +118,7 @@ detect_interface() {
 
 install_dependencies() {
     apt-get update $APT_OPTS
-    apt-get install $APT_OPTS wget curl sudo jq iproute2 unzip
+    apt-get install $APT_OPTS wget curl sudo jq iproute2 unzip btop
 }
 
 fix_etc_hosts() { 
@@ -369,9 +369,9 @@ systemd_resolved() {
 
     cat > /etc/systemd/resolved.conf <<EOF
 [Resolve]
-DNS=1.1.1.1
-FallbackDNS=1.0.0.1
-Cache=no-negative
+DNS=1.1.1.1 8.8.8.8
+FallbackDNS=1.0.0.1 8.8.4.4
+Cache=yes
 EOF
     systemctl restart systemd-resolved
 }
@@ -405,7 +405,7 @@ EOF
 }
 
 ciadpi() {
-    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/install.sh)
+    bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/ciadpi.sh)
 }
 
 tun2socks_install() {
@@ -484,7 +484,7 @@ amnezia() {
 
 vpnhood() {
     # Default settings and configuration parameters
-    local packageUrl="https://ghfast.top/https://github.com/vpnhood/VpnHood/releases/download/v3.2.448/VpnHoodServer-linux-x64.tar.gz"
+    local packageUrl="https://github.com/vpnhood/VpnHood/releases/download/v3.2.448/VpnHoodServer-linux-x64.tar.gz"
     local versionTag="v3.2.448"
     local destinationPath="/opt/VpnHoodServer"
     local binDir="$destinationPath/$versionTag"
@@ -540,7 +540,7 @@ vpnhood() {
 
     # Config appsettings.json
     mkdir -p "$destinationPath/storage"
-    wget "https://ghfast.top/https://github.com/Onair-santa/VpnHood/releases/download/v3.2/appsettings.json" -q -O "$APPSET"
+    wget "https://github.com/Onair-santa/VpnHood/releases/download/v3.2/appsettings.json" -q -O "$APPSET"
     sed -i "s/externalip/${EXTIP}/g" "$APPSET"
     
     if [ "$vh_port" != "443" ]; then
@@ -664,11 +664,11 @@ show_menu() {
     echo ""
 
     msg_success '1. Full Setup (Update + All Optimizations)'
-    msg_success '2. Change Repository to Debian 11'
+    msg_success '2. Change Repository to Debian11'
     msg_success '3. Quick Update & Core Optimizations'
     echo ""
     msg_info '4. System Cleanup'
-    msg_info '5. Install Packages (htop, curl, nftables...)'
+    msg_info '5. Install Packages(htop, curl, nftables,jq, dialog, btop, unzip)'
     msg_info '6. Configure SWAP (1Gb)'
     msg_info '7. Network & SSH Hardening + Limits'
     echo ""
