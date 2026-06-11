@@ -668,7 +668,7 @@ show_menu() {
     msg_success '3. Quick Update & Core Optimizations'
     echo ""
     msg_info '4. System Cleanup'
-    msg_info '5. Install Packages(htop, curl, nftables,jq, dialog, btop, unzip)'
+    msg_info '5. Install Packages(htop, iproute2,jq, dialog, btop, unzip)'
     msg_info '6. Configure SWAP (1Gb)'
     msg_info '7. Network & SSH Hardening + Limits'
     echo ""
@@ -745,7 +745,7 @@ main() {
         9) set_steps 2; run_task "Cleaning old SSH config" "remove_old_ssh_conf"; run_task "Applying new SSH config" "update_sshd_conf" ;;
         10) set_steps 1; run_task "Optimizing limits" "limits_optimizations" ;;
         11) set_steps 1; run_task "Configuring Firewall" "nft_optimizations" ;;
-        12) set_steps 1; run_task "Installing Synth-Shell" "synth_shell" ;;
+        12) run_interactive_task "Installing Synth-Shell" "synth_shell" ;;
         13) set_steps 1; run_task "Installing Fail2Ban" "f2b_install" ;;
         14) set_steps 1; run_task "Installing DNS Proxy" "dnsproxy" ;;
         15) set_steps 1; run_task "Configuring Systemd Resolved" "systemd_resolved" ;;
