@@ -710,7 +710,7 @@ main() {
         read -r -p 'Enter Your Choice: ' choice
         case $choice in
         1) 
-            set_steps 11
+            set_steps 10
             run_task "Updating & cleaning system" "complete_update"
             run_task "Installing useful packages" "installations"
             run_task "Enabling services" "enable_packages"
@@ -721,7 +721,7 @@ main() {
             run_task "Finding active SSH port" "find_ssh_port"
             run_task "Configuring Firewall (NFTables)" "nft_optimizations"
             run_task "Installing SSH key" "install_key"
-            run_task "Installing Synth-Shell" "synth_shell"
+            run_interactive_task "Installing Synth-Shell" "synth_shell"
             ask_reboot
             ;;
         2) set_steps 1; run_task "Changing Debian 11 repositories" "repo_debian" ;;
