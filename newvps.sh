@@ -247,6 +247,7 @@ table inet filter {
     chain input {
         type filter hook input priority filter; policy drop;
         iifname "lo" accept
+        meta nfproto ipv6 drop
         ct state established,related accept
         iifname "$INTERFACE" tcp dport 2222 accept
         iifname "$INTERFACE" tcp dport 80 accept
@@ -286,6 +287,7 @@ table inet filter {
     chain input {
         type filter hook input priority filter; policy drop;
         iifname "lo" accept
+        meta nfproto ipv6 drop
         ct state established,related accept
         iifname "${INTERFACE}" tcp dport 2222 accept
         iifname "${INTERFACE}" tcp dport 80 accept
