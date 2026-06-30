@@ -1,0 +1,218 @@
+================================================================================
+ПОЛНОЕ РУКОВОДСТВО: НАСТРОЙКА СВЯЗКИ VPNhood + tun2socks
+================================================================================
+
+Это единый технический архив нашей переписки и настройки сервера. 
+Здесь собраны два варианта конфигурации: с локальным обходчиком (ciadpi) 
+и с внешним SOCKS5-прокси (финальное рабочее решение с исправлением петель).
+
+--------------------------------------------------------------------------------
+ЧАСТЬ 1: Конфигурация с локальным прокси (ciadpi / ByeDPI)
+--------------------------------------------------------------------------------
+Архитектура: Клиент -> VPNhood -> tun2socks -> Локальный ciadpi (127.0.0.1:20000)
+
+1.1. Файл службы /etc/systemd/system/tun2socks.service (Локальный вариант)
+
+[Unit]
+Description=tun2socks Proxy for VPNhood (Local ciadpi)
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tun2socks -device tun-proxy -proxy "socks5://127.0.0.1:20000"
+
+ExecStartPost=/bin/sleep 1
+ExecStartPost=ip link set dev tun-proxy up
+ExecStartPost=ip addr add 198.18.0.1/15 dev tun-proxy
+ExecStartPost=sysctl -w net.ipv4.conf.all.rp_filter=0
+ExecStartPost=sysctl -w net.ipv4.conf.default.rp_filter=0
+ExecStartPost=sysctl -w net.ipv4.conf.tun-proxy.rp_filter=0
+ExecStartPost=ip route add default dev tun-proxy table 200
+ExecStartPost=ip rule add fwmark 1 lookup 200
+
+ExecStopPost=ip rule del fwmark 1 lookup 200
+ExecStopPost=ip route flush table 200
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+
+
+1.2. Файл фаервола /etc/nftables.conf (Локальный вариант)
+
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+        iifname "lo" accept
+        ct state established,related accept
+        iifname "ens3" tcp dport 2222 accept
+        iifname "ens3" tcp dport 80 accept
+        iifname "ens3" tcp dport 443 accept
+        iifname "ens3" udp dport 1024-65535 accept
+        iifname "ens3" tcp dport 55555 accept
+        iifname "ens3" tcp dport 40000 accept
+    }
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+    }
+    chain output {
+        type filter hook output priority filter; policy accept;
+        meta skuid 996 ip6 daddr != ::1 drop
+    }
+}
+
+table ip mangle {
+    chain output {
+        type route hook output priority mangle; policy accept;
+        
+        # Исключаем локальный трафик (пакеты в ciadpi не маркируются)
+        ip daddr 127.0.0.0/8 return
+        
+        # Исключаем ответы сервера обратно клиенту VPNhood
+        tcp sport 40000 return
+        udp sport 40000 return
+        
+        # Маркируем интернет-трафик пользователя VPNhood (UID 996)
+        meta skuid 996 mark set 1
+    }
+}
+
+
+--------------------------------------------------------------------------------
+ЧАСТЬ 2: Конфигурация с ВНЕШНИМ прокси (Финальное рабочее решение)
+--------------------------------------------------------------------------------
+Суть проблемы: При переходе на внешний прокси пропадало соединение.
+Причина: Петля маршрутизации (routing loop). Ответные пакеты от сервера к клиентам 
+улетали с порта 40000 не напрямую пользователю, а ошибочно маркировались и 
+заворачивались обратно в туннель tun2socks.
+Решение: Одновременное добавление исключения по IP прокси (daddr) и по исходящему 
+порту VPNhood (sport 40000) в таблицу mangle.
+
+2.1. Файл службы /etc/systemd/system/tun2socks.service (Внешний вариант)
+*Примечание: Команды ip и sysctl указаны без /sbin/ для универсальной совместимости,
+чтобы на любом новом сервере гарантированно поднимался IPv4-интерфейс.*
+
+[Unit]
+Description=tun2socks Proxy for VPNhood (External Proxy)
+After=network-online.target
+
+[Service]
+Type=simple
+# Запуск tun2socks с внешним SOCKS5 прокси
+ExecStart=/usr/local/bin/tun2socks -device tun-proxy -proxy "socks5://lumi-ez3mjil6rgli:0nrLy5ASiTjMh8jR@89.218.21.9:6011"
+
+# Настройка сети
+ExecStartPost=sleep 1
+ExecStartPost=ip link set dev tun-proxy up
+ExecStartPost=ip addr add 198.18.0.1/15 dev tun-proxy
+ExecStartPost=sysctl -w net.ipv4.conf.all.rp_filter=0
+ExecStartPost=sysctl -w net.ipv4.conf.default.rp_filter=0
+ExecStartPost=sysctl -w net.ipv4.conf.tun-proxy.rp_filter=0
+ExecStartPost=ip route add default dev tun-proxy table 200
+ExecStartPost=ip rule add fwmark 1 lookup 200
+
+# Очистка при остановке службы
+ExecStopPost=ip rule del fwmark 1 lookup 200
+ExecStopPost=ip route flush table 200
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+
+
+2.2. Файл фаервола /etc/nftables.conf (Внешний вариант — РАБОЧИЙ ФИНАЛ)
+
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+        iifname "lo" accept
+        ct state established,related accept
+        iifname "ens3" tcp dport 2222 accept
+        iifname "ens3" tcp dport 80 accept
+        iifname "ens3" tcp dport 443 accept
+        
+        # Разрешаем входящие подключения клиентов VPNhood на порт 40000 (TCP и UDP)
+        iifname "ens3" tcp dport 40000 accept
+        iifname "ens3" udp dport 40000 accept
+        
+        iifname "ens3" udp dport 1024-65535 accept
+        iifname "ens3" tcp dport 55555 accept
+    }
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+    }
+    chain output {
+        type filter hook output priority filter; policy accept;
+        
+        # Блокируем IPv6 для VPNhood (защита от утечек)
+        meta skuid 996 ip6 daddr != ::1 drop
+    }
+}
+
+table ip mangle {
+    chain output {
+        type route hook output priority mangle; policy accept;
+        
+        # 1. Исключаем локальную петлю localhost
+        ip daddr 127.0.0.0/8 return
+        
+        # 2. ЗАЩИТА ТУННЕЛЯ: Исключаем трафик до самого внешнего SOCKS5 сервера,
+        # чтобы tun2socks не заворачивал свой собственный трафик сам в себя.
+        ip daddr 89.218.21.9 return
+        
+        # 3. ЗАЩИТА КЛИЕНТОВ: Исключаем ответы сервера обратно клиенту VPNhood.
+        # Пакеты, уходящие С порта 40000, гарантированно уйдут клиентам напрямую через ens3.
+        tcp sport 40000 return
+        udp sport 40000 return
+        
+        # 4. Маркируем только чистый интернет-трафик от пользователя VPNhood
+        meta skuid 996 mark set 1
+    }
+}
+
+
+--------------------------------------------------------------------------------
+ЧАСТЬ 3: Теория и правила изменения портов
+--------------------------------------------------------------------------------
+Для стабильной работы принудительной маршрутизации через метки (fwmark) важны два правила:
+1. Правило по "daddr" (назначение): Трафик, идущий к самому прокси-серверу, 
+   должен идти в обход tun2socks, иначе будет бесконечная петля.
+2. Правило по "sport" (исходный порт): Ответные пакеты от службы VPN к клиентам 
+   являются служебными. Их маркировать нельзя, они должны идти напрямую.
+
+ЕСЛИ В БУДУЩЕМ ЗАХОЧЕШЬ ПЕРЕНЕСТИ VPNHOOD НА ПОРТ 443:
+Вместо обычной замены "найти и заменить" нужно учесть важный нюанс фаервола:
+1. В секции "chain input" нужно явно добавить строку:
+   iifname "ens3" udp dport 443 accept
+   (Потому что старое правило "udp dport 1024-65535" не защищает порты ниже 1024).
+2. В секции "table ip mangle" строки исключений портов нужно заменить строго на:
+   tcp sport 443 return
+   udp sport 443 return
+
+ШПАРГАЛКА ПО КОМАНДАМ ДЛЯ ПРИМЕНЕНИЯ ИЗМЕНЕНИЙ:
+# Перезапуск подсистемы инициализации и туннеля tun2socks
+systemctl daemon-reload
+systemctl restart tun2socks
+
+# Проверка, что интерфейс успешно поднялся и получил IPv4 адрес
+ip a show dev tun-proxy
+
+# Применение правил фаервола из файла конфигурации и его перезапуск
+nft -f /etc/nftables.conf
+systemctl restart nftables
+
+# Просмотр логов туннеля в случае неполадок
+journalctl -u tun2socks.service -n 40 --no-pager
+================================================================================
