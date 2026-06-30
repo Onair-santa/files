@@ -455,11 +455,11 @@ EOF
 
 synth_shell() {
     apt-get update $APT_OPTS && apt-get install bc fonts-powerline git $APT_OPTS
-    rm -rf /tmp/synth-shell
-    git clone --recursive https://github.com/andresgongora/synth-shell.git /tmp/synth-shell
-    chmod +x /tmp/synth-shell/setup.sh
-    /tmp/synth-shell/setup.sh -y
-    rm -f ~/.config/synth-shell/synth-shell-greeter.config*
+    git clone --recursive https://github.com/andresgongora/synth-shell.git
+    chmod +x synth-shell/setup.sh
+    ~/synth-shell/setup.sh
+    sudo rm ~/.config/synth-shell/synth-shell-greeter.config.default
+    sudo rm ~/.config/synth-shell/synth-shell-greeter.config
     wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.config -q -O ~/.config/synth-shell/synth-shell-greeter.config
     wget https://raw.githubusercontent.com/Onair-santa/files/main/synth-shell-greeter.sh -q -O ~/.config/synth-shell/synth-shell-greeter.sh
 }
