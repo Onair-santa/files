@@ -1,0 +1,89 @@
+//@version=6
+indicator('SuperTrend MTF', 'SuperTrend MTF')
+length = input.int(10, minval = 1)
+mult = input.float(2., minval = 1)
+smooth = input.int(72, minval = 1)
+
+// --- MTF Настройки ---
+grp_mtf = 'Фильтры старших таймфреймов (MTF)'
+use_mtf = input.bool(true, 'Включить проверку старших ТФ', group = grp_mtf)
+tf1 = input.timeframe('240', 'Таймфрейм 1 (напр. 4ч)', group = grp_mtf)
+tf2 = input.timeframe('1D', 'Таймфрейм 2 (напр. День)', group = grp_mtf)
+
+//Misc
+fixed = input.bool(false, 'Fixed Transparency', group = 'Misc')
+show_ln = input.bool(true, 'Show Lines', group = 'Misc')
+show_lb = input.bool(false, 'Показывать старую статистику %', group = 'Misc')
+
+src = close
+lower = 0.
+upper = 0.
+trend = 0
+
+// --- Цветовые массивы ---
+var up_col = array.new_color(0)
+var dn_col = array.new_color(0)
+if barstate.isfirst
+    for i = 100 to 1 // Исправлено: Pine Script сам отнимает по 1, так как 100 > 1
+        array.push(up_col, color.new(#0cb51a, i))
+        array.push(dn_col, color.new(#ff1100, i))
+
+// --- Базовый SuperTrend ---
+atr = ta.atr(length) * mult
+up = hl2 + atr
+dn = hl2 - atr
+upper := src[1] < upper[1] ? math.min(up, upper[1]) : up
+lower := src[1] > lower[1] ? math.max(dn, lower[1]) : dn
+trend := src > upper[1] ? 1 : src < lower[1] ? 0 : trend[1]
+Spt = trend * lower + (1 - trend) * upper
+
+// --- Логика MTF ---
+get_st_dir(l, m) =>
+    [st, dir] = ta.supertrend(m, l)
+    dir < 0 ? 1 : -1 
+
+htf1_dir = request.security(syminfo.tickerid, tf1, get_st_dir(length, mult), lookahead = barmerge.lookahead_off)
+htf2_dir = request.security(syminfo.tickerid, tf2, get_st_dir(length, mult), lookahead = barmerge.lookahead_off)
+
+// --- Осциллятор ---
+ama = 0.
+osc = math.max(math.min((src - Spt) / (upper - lower), 1), -1)
+alpha = math.pow(osc, 2) / length
+ama := nz(ama[1] + alpha * (osc - ama[1]), osc)
+hist = ta.ema(osc - ama, smooth)
+
+fix_css = osc > 0 ? #0cb51a : #ff1100
+var_css = osc > 0 ? array.get(up_col, math.round(osc * 99)) : array.get(dn_col, math.round(osc * -1 * 99))
+sig_css = ama > 0 ? #2157f3 : #673ab7
+
+plot(fixed ? osc * 100 : na, 'Main Fixed', fix_css, 1, plot.style_area)
+plot(fixed ? na : osc * 100, 'Main Transp', var_css, 1, plot.style_columns, editable = false)
+plot(hist * 100, 'Histogram', color.new(#808080, 40), 1, plot.style_area)
+plot(ama * 100, 'Signal', sig_css)
+
+a = hline(80)
+b = hline(-80)
+fill(a, b, color.new(#2157f3, 90))
+
+// --- НОВЫЕ ТОЧНЫЕ СИГНАЛЫ ---
+up_cross = ta.crossover(src, Spt)
+dn_cross = ta.crossunder(src, Spt)
+
+valid_buy = up_cross and (not use_mtf or (htf1_dir == 1 and htf2_dir == 1))
+valid_sell = dn_cross and (not use_mtf or (htf1_dir == -1 and htf2_dir == -1))
+
+plotshape(valid_buy ? -100 : na, "Buy Signal", shape.labelup, location.absolute, #0cb51a, text="BUY", textcolor=color.white, size=size.small)
+plotshape(valid_sell ? 100 : na, "Sell Signal", shape.labeldown, location.absolute, #ff1100, text="SELL", textcolor=color.white, size=size.small)
+
+// Старая статистика (если включена)
+if show_lb
+    cross = ta.cross(src, Spt)
+    n = bar_index
+    false_buy = ta.valuewhen(ta.crossunder(src, Spt), src, 0) < ta.valuewhen(ta.crossover(src, Spt), src, 0)
+    false_sell = ta.valuewhen(ta.crossover(src, Spt), src, 0) > ta.valuewhen(ta.crossunder(src, Spt), src, 0)
+    num = ta.cum(cross and (false_buy or false_sell) ? 1 : 0)
+    den = ta.cum(cross ? 1 : 0)
+    per = num / den * 100
+    if barstate.islast
+        txt = '❌' + str.tostring(per, '#.##') + '%'
+        label.delete(label.new(n, osc, txt, color = #00000000, style = label.style_label_left, textcolor = color.gray, textalign = text.align_left)[1])
