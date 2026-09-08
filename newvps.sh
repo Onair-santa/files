@@ -614,15 +614,16 @@ EOF
 
 repo_debian() {
    cat > /etc/apt/sources.list << 'EOF'
-deb http://deb.debian.org/debian bullseye main
-deb-src http://deb.debian.org/debian bullseye main
-deb http://security.debian.org/debian-security bullseye-security main
-deb-src http://security.debian.org/debian-security bullseye-security main
-deb http://deb.debian.org/debian bullseye-updates main
-deb-src http://deb.debian.org/debian bullseye-updates main
+deb http://archive.debian.org/debian bullseye main
+deb-src http://archive.debian.org/debian bullseye main
+deb http://archive.debian.org/debian bullseye-updates main
+deb-src http://archive.debian.org/debian bullseye-updates main
 deb http://archive.debian.org/debian bullseye-backports main
 deb-src http://archive.debian.org/debian bullseye-backports main
+deb http://snapshot.debian.org/archive/debian-security/20260901T000000Z bullseye-security main
+deb-src http://snapshot.debian.org/archive/debian-security/20260901T000000Z bullseye-security main
 EOF
+   echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
 }
 
 ask_reboot() {
