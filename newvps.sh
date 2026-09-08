@@ -407,6 +407,7 @@ EOF
 }
 
 ciadpi() {
+    apt-get install -y build-essential
     bash <(wget -qO- https://raw.githubusercontent.com/Onair-santa/Byedpi-Setup/refs/heads/main/ciadpi.sh)
 }
 
